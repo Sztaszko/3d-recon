@@ -11,6 +11,10 @@ find_package(Ceres  REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${CERES_INCLUDE_DIRS})
 
-add_executable(3d-recon main.cpp)
+include_directories(3d-recon PRIVATE inc/ src/)
+
+add_executable(3d-recon main.cpp inc/reconstruction.h inc/cameracalibrator.h src/reconstruction.cpp src/cameracalibrator.cpp)
+
+
 
 target_link_libraries(3d-recon ${OpenCV_LIBS})
