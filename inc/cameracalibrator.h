@@ -11,17 +11,6 @@
 
 
 class CameraCalibrator {
-
-    // input points
-
-    // flag to specify how calibration is done
-    int flag;
-
-    // used in image undistortion
-    cv::Mat map1, map2;
-    bool mustInitUndistort;
-
-
     public:
     CameraCalibrator() :
         flag(0),
@@ -49,6 +38,29 @@ class CameraCalibrator {
     // Getters
     cv::Mat getCameraMatrix() { return cameraMatrix; }
     cv::Mat getDistCoeffs()   { return distCoeffs; }
+    std::vector<std::vector<cv::Point3f>> get_objectPoints() { return objectPoints; }
+    std::vector<std::vector<cv::Point2f>> get_imagePoints() { return imagePoints; }
+    cv::Mat get_cameraMatrix() {return cameraMatrix; };
+    cv::Mat get_distCoeffs() { return distCoeffs; }
+    std::vector<cv::Mat> get_rvecs() { return rvecs; }
+    std::vector<cv::Mat> get_tvecs() {return tvecs; }
+
+private:
+    // flag to specify how calibration is done
+    int flag;
+
+    // used in image undistortion
+    cv::Mat map1, map2;
+    bool mustInitUndistort;
+
+    std::vector<std::vector<cv::Point3f>> objectPoints;
+    std::vector<std::vector<cv::Point2f>> imagePoints;
+
+    // output Matrices
+    cv::Mat cameraMatrix;
+    cv::Mat distCoeffs;
+
+    std::vector<cv::Mat> rvecs, tvecs;
 };
 
 #endif // CAMERACALIBRATOR_H
