@@ -13,7 +13,12 @@ include_directories(${CERES_INCLUDE_DIRS})
 
 include_directories(3d-recon PRIVATE inc/ src/)
 
-add_executable(3d-recon main.cpp inc/reconstruction.h inc/cameracalibrator.h src/reconstruction.cpp src/cameracalibrator.cpp)
+add_executable(3d-recon main.cpp inc/reconstruction.h
+    inc/cameracalibrator.h
+    inc/camera.h
+    src/reconstruction.cpp
+    src/cameracalibrator.cpp
+    src/camera.cpp)
 
 
 
