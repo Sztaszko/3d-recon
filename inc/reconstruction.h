@@ -10,11 +10,14 @@ public:
 
     void init();
 
-    void reconstruct(cv::Mat image1, cv::Mat image2);
+    std::vector<cv::Vec3d> reconstruct(cv::Mat image1, cv::Mat image2);
 
     void match_points(cv::Mat image1, cv::Mat image2,
                       std::vector<cv::Point2f> &points1,
                       std::vector<cv::Point2f> &points2);
+
+    void create_inliers(std::vector<cv::Point2f> points1, std::vector<cv::Point2f> points2,
+                        std::vector<cv::Vec2d> &inlier1, std::vector<cv::Vec2d> &inlier2, cv::Mat inliers);
 
 
     std::pair<cv::Mat, cv::Mat> get_projection_mats(cv::Mat rotation, cv::Mat translation);
@@ -25,9 +28,13 @@ public:
                      const std::vector<cv::Vec2d> &pts2,
                      std::vector<cv::Vec3d> &pts3D);
 
+    // getters
+    std::vector<cv::Vec3d> get_points3D() { return points3D; }
+
 private:
     std::vector<std::string> chessboard_files;
     CameraCalibrator cal;
+    std::vector<cv::Vec3d> points3D;
 };
 
 

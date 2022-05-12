@@ -1,6 +1,7 @@
 #include "reconstruction.h"
 #include "opencv2/xfeatures2d.hpp"
 #include <opencv2/sfm.hpp>
+#include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/viz.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -27,25 +28,24 @@ void Reconstructor::init()
                        "boards/21.jpg","boards/22.jpg",
                        "boards/23.jpg","boards/24.jpg",
                        "boards/25.jpg"};
-}
 
-void Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
-{
     cv::Size board_size(7,7);
 
     cal.addChessboardPoints(chessboard_files, board_size);
-
     cv::Mat img = cv::imread(chessboard_files[0]);
     cv::Size img_size = img.size();
 
     cal.calibrate(img_size);
     std::cout << cal.get_cameraMatrix() << std::endl;
 
+}
 
+std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
+{
     std::vector<cv::Point2f> points1, points2;
     match_points(image1, image2, points1, points2);
 
-    //TODO this segment is meant to be replaced by getting translation and rotation from camera move API:
+    //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
     // ===========================
 
     // Find the essential between image 1 and image 2
@@ -59,7 +59,12 @@ void Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
     cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
     std::cout << rotation << std::endl;
     std::cout << translation << std::endl;
+
     // ==========================
+
+    // get the inliers after replacing code above
+//    cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
+
 
     // compose projection matrix from R,T
     std::pair<cv::Mat, cv::Mat> projections = get_projection_mats(rotation, translation);
@@ -71,14 +76,8 @@ void Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
     std::vector<cv::Vec2d> inlierPts1;
     std::vector<cv::Vec2d> inlierPts2;
 
-    // create inliers input point vector for triangulation
-    int j(0);
-    for (int i = 0; i < inliers.rows; i++) {
-      if (inliers.at<uchar>(i)) {
-        inlierPts1.push_back(cv::Vec2d(points1[i].x, points1[i].y));
-        inlierPts2.push_back(cv::Vec2d(points2[i].x, points2[i].y));
-      }
-    }
+    create_inliers(points1, points2, inlierPts1, inlierPts2, inliers);
+
 
     // undistort and normalize the image points
     std::vector<cv::Vec2d> points1u;
@@ -87,21 +86,11 @@ void Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
     cv::undistortPoints(inlierPts2, points2u, cal.get_cameraMatrix(), cal.get_distCoeffs());
 
     // Triangulation
-    std::vector<cv::Vec3d> points3D;
     triangulate(projection1, projection2, points1u, points2u, points3D);
 
-    std::cout<<"3D points :"<<points3D.size()<<std::endl;
+    std::cout<<"3D points :" << points3D.size() << std::endl;
 
-    cv::viz::Viz3d window; //creating a Viz window
-
-    //Displaying the Coordinate Origin (0,0,0)
-    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
-
-    window.setBackgroundColor(cv::viz::Color::black());
-
-    //Displaying the 3D points in green
-    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
-    window.spin();
+    return points3D;
 }
 
 void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
@@ -149,7 +138,20 @@ void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
 
 }
 
-std::pair<cv::Mat, cv::Mat>  Reconstructor::get_projection_mats(cv::Mat rotation, cv::Mat translation)
+void Reconstructor::create_inliers(std::vector<cv::Point2f> points1, std::vector<cv::Point2f> points2,
+                                   std::vector<cv::Vec2d> &inlierPts1, std::vector<cv::Vec2d> &inlierPts2, cv::Mat inliers)
+{
+    // create inliers input point vector for triangulation
+    int j(0);
+    for (int i = 0; i < inliers.rows; i++) {
+      if (inliers.at<uchar>(i)) {
+        inlierPts1.push_back(cv::Vec2d(points1[i].x, points1[i].y));
+        inlierPts2.push_back(cv::Vec2d(points2[i].x, points2[i].y));
+      }
+    }
+}
+
+std::pair<cv::Mat, cv::Mat> Reconstructor::get_projection_mats(cv::Mat rotation, cv::Mat translation)
 {
     std::pair<cv::Mat, cv::Mat> ret_pair;
 

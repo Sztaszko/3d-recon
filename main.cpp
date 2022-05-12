@@ -51,10 +51,23 @@ static int getdir(const string _filename, vector<String> &files)
 int main(){
 
     Reconstructor reconstructor;
-    reconstructor.init();
+    reconstructor.init(); //calibration
+
     cv::Mat image1 = cv::imread("imR.png");
     cv::Mat image2 = cv::imread("imL.png");
 
-    reconstructor.reconstruct(image1, image2);
+    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(image1, image2);
+
+    // visualize
+    cv::viz::Viz3d window; //creating a Viz window
+
+    //Displaying the Coordinate Origin (0,0,0)
+    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
+
+    window.setBackgroundColor(cv::viz::Color::black());
+
+    //Displaying the 3D points in green
+    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
+    window.spin();
 
 }
