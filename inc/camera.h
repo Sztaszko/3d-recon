@@ -3,6 +3,9 @@
 
 #include <vector>
 
+namespace cameraAPI {
+
+
 /*!
  * \brief The Camera class - base camera class for camera movement API
  */
@@ -31,5 +34,19 @@ private:
     double _posX, _posY, _posZ;
 
 };
+
+
+class HandCamera : public Camera {
+
+public:
+    HandCamera();
+
+    std::vector<double> move(double x, double y, double z) override
+    ;
+
+};
+
+
+}; // ~cameraAPI
 
 #endif // CAMERA_H
