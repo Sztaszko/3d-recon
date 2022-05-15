@@ -5,7 +5,6 @@
 
 namespace cameraAPI {
 
-
 /*!
  * \brief The Camera class - base camera class for camera movement API
  */
@@ -21,7 +20,7 @@ public:
      * \param z
      * \return vector with acquired position coordinates
      */
-    virtual std::vector<double> move(double x, double y, double z);
+    virtual std::vector<double> move(double x, double y, double z) = 0;
 
     //getters
     double get_posX() { return _posX; }
@@ -29,7 +28,7 @@ public:
     double get_posZ() { return _posZ; }
 
 
-private:
+protected:
 
     double _posX, _posY, _posZ;
 
@@ -41,8 +40,9 @@ class HandCamera : public Camera {
 public:
     HandCamera();
 
-    std::vector<double> move(double x, double y, double z) override
-    ;
+    std::vector<double> move(double x, double y, double z) override;
+
+    std::vector<double> move(int alpha);
 
 };
 
