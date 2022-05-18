@@ -6,32 +6,107 @@
 #include <opencv2/viz.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
-
+#include <unistd.h>
 
 Reconstructor::Reconstructor()
 {
 
 }
 
-void Reconstructor::init()
+/* TODO that's how whole pipeline should look like:
+ * init() - camera calibration, get camera matrix
+ *
+ * get camera Matrix from calibrator and extract extrinsic matrix [R|T]
+ *
+ * Perform first movement scan - giving and saving positions of camera to a vector
+ * for i in first_scan_positions:
+ * std::vector<cv::Vec3d> positions.push_back(camera.move(i))
+ *
+ * Explore saved dataset and find the best 2 matching pictures
+ * Remove outliers etc.
+ * Undistort and triangulate 3D points from these 2 pictures
+ * Save 3D points to a points cloud
+ *
+ * Iterate over all begginning pictures:
+ *  Calculate camera position based on previously gained coordinates.
+ *  Find correspondences and points visible by both pictures.
+ *  Triangulate and add new points.
+ *  Bundle adjustment
+ *
+ * When finished apply feedback algorythm  -> find where position where is less points and
+ * find camera position for increasing theirs amount.
+ *
+ * Move camera to given position and take pictures. Find nearest previously taken pictures
+ * and match points.
+ * Traingulate, add points to 3D cloud and bundle adjust.
+ *
+ * Repeat until requested precision is completed or made no progress.
+ *
+ */
+
+
+void Reconstructor::init(cameraAPI::Camera& cam)
 {
-    chessboard_files = {"boards/1.jpg", "boards/2.jpg",
-                       "boards/3.jpg","boards/4.jpg",
-                       "boards/5.jpg","boards/6.jpg",
-                       "boards/7.jpg","boards/8.jpg",
-                       "boards/9.jpg","boards/10.jpg",
-                       "boards/11.jpg","boards/12.jpg",
-                       "boards/13.jpg","boards/14.jpg",
-                       "boards/15.jpg","boards/16.jpg",
-                       "boards/17.jpg","boards/18.jpg",
-                       "boards/19.jpg","boards/20.jpg",
-                       "boards/21.jpg","boards/22.jpg",
-                       "boards/23.jpg","boards/24.jpg",
-                       "boards/25.jpg"};
+//    chessboard_files = {"boards/1.jpg", "boards/2.jpg",
+//                       "boards/3.jpg","boards/4.jpg",
+//                       "boards/5.jpg","boards/6.jpg",
+//                       "boards/7.jpg","boards/8.jpg",
+//                       "boards/9.jpg","boards/10.jpg",
+//                       "boards/11.jpg","boards/12.jpg",
+//                       "boards/13.jpg","boards/14.jpg",
+//                       "boards/15.jpg","boards/16.jpg",
+//                       "boards/17.jpg","boards/18.jpg",
+//                       "boards/19.jpg","boards/20.jpg",
+//                       "boards/21.jpg","boards/22.jpg",
+//                       "boards/23.jpg","boards/24.jpg",
+//                       "boards/25.jpg"};
+
+
+    std::vector<std::string> chessboard_files;
+
+    // Grab and write loop of calibration chessboard
+    int images_count = 25;
+    cv::Mat frame;
+
+    // get executing path
+    char pBuf[256];
+    size_t len = sizeof(pBuf);
+
+    int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
+    if(bytes >= 0)
+        pBuf[bytes] = '\0';
+
+    std::string filepath(pBuf);
+
+    for (int i=0; i<images_count; ++i)
+    {
+        // wait for a new frame from camera and store it into 'frame'
+        cam.read(frame);
+        // check if we succeeded
+        if (frame.empty()) {
+            std::cerr << "ERROR! blank frame grabbed\n";
+            break;
+        }
+        // show live and wait for a key with timeout long enough to show images
+        imshow("Live", frame);
+
+        std::string filename = filepath + std::to_string(i) + ".jpg";
+        if (!cv::imwrite(filename, frame)) {
+            std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
+            break;
+        }
+        chessboard_files.push_back(filename);
+
+        if (cv::waitKey(50) >= 0)
+            break;
+    }
 
     cv::Size board_size(7,7);
 
-    cal.addChessboardPoints(chessboard_files, board_size);
+    if (!cal.addChessboardPoints(chessboard_files, board_size)) {
+        return ;
+    }
+
     cv::Mat img = cv::imread(chessboard_files[0]);
     cv::Size img_size = img.size();
 
@@ -42,14 +117,16 @@ void Reconstructor::init()
 
 std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
 {
+
     std::vector<cv::Point2f> points1, points2;
     match_points(image1, image2, points1, points2);
+
+    cv::Mat inliers;
 
     //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
     // ===========================
 
     // Find the essential between image 1 and image 2
-    cv::Mat inliers;
     cv::Mat essential = cv::findEssentialMat(points1, points2, cal.get_cameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
     std::cout << essential << std::endl;

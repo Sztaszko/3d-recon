@@ -1,6 +1,7 @@
 #include "cameracalibrator.h"
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/calib3d/calib3d_c.h>
 #include "opencv2/xfeatures2d.hpp"
 
 using namespace std;
@@ -33,12 +34,20 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     // for all viewpoints
     for (int i=0; i<filelist.size(); i++) {
 
+        std::cout << "Read file: " << filelist[i] << "\n";
+
         // Open the image
         image = cv::imread(filelist[i],0);
 
         // Get the chessboard corners
-        bool found = cv::findChessboardCorners(image, boardSize, imageCorners);
+        bool found = cv::findChessboardCorners(image, boardSize, imageCorners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
+        if (!found || imageCorners.empty()) {
+            std::cout << "ERROR! Not all chessboard corners found. Only " << imageCorners.size() << " were found.\n";
+            continue;
+        }
+
+        std::cout << "Corners found: " << imageCorners.size() << "\n";
         // Get subpixel accuracy on the corners
         cv::cornerSubPix(image, imageCorners,
                           cv::Size(5,5),

@@ -3,12 +3,13 @@
 
 #include <opencv2/core/core.hpp>
 #include "cameracalibrator.h"
+#include "camera.h"
 
 class Reconstructor {
 public:
     Reconstructor();
 
-    void init();
+    void init(cameraAPI::Camera& cam);
 
     std::vector<cv::Vec3d> reconstruct(cv::Mat image1, cv::Mat image2);
 

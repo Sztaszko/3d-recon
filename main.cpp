@@ -9,6 +9,7 @@
 #include <fstream>
 #include "reconstruction.h"
 #include "cameracalibrator.h"
+#include "camera.h"
 
 using namespace std;
 using namespace cv;
@@ -18,9 +19,7 @@ using namespace cv::sfm;
 static void help() {
   cout
       << "\n------------------------------------------------------------------------------------\n"
-      << " This program shows the multiview reconstruction capabilities in the \n"
-      << " OpenCV Structure From Motion (SFM) module.\n"
-      << " It reconstruct a scene from a set of 2D images \n"
+      << " This program performs multiview sfm reconstruction \n"
       << " Usage:\n"
       << "        example_sfm_scene_reconstruction <path_to_file> <f> <cx> <cy>\n"
       << " where: path_to_file is the file absolute path into your system which contains\n"
@@ -41,17 +40,24 @@ static int getdir(const string _filename, vector<String> &files)
     size_t found = _filename.find_last_of("/\\");
     string line_str, path_to_file = _filename.substr(0, found);
     while ( getline(myfile, line_str) )
-      files.push_back(path_to_file+string("/")+line_str);
+      files.push_back(path_to_file+string("/") + line_str);
   }
   return 1;
 }
 
 
-
 int main(){
 
+    cameraAPI::HandCamera camera;
+    int deviceID = 0;
+    int apiID = cv::CAP_ANY;
+    if (!camera.open(deviceID, apiID)) {
+        std::cerr << "ERROR! Unable to open camera\n";
+        return -1;
+    }
+
     Reconstructor reconstructor;
-    reconstructor.init(); //calibration
+    reconstructor.init(camera); //calibration
 
     cv::Mat image1 = cv::imread("imR.png");
     cv::Mat image2 = cv::imread("imL.png");
