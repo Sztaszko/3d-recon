@@ -3,11 +3,56 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d_c.h>
 #include "opencv2/xfeatures2d.hpp"
+#include <unistd.h>
 
 using namespace std;
 using namespace cv;
 
 // Open chessboard images and extract corner points
+std::vector<string> CameraCalibrator::getCalibImages(cameraAPI::Camera& cam)
+{
+    std::vector<std::string> chessboard_files;
+
+    // Grab and write loop of calibration chessboard
+    int images_count = 25;
+    cv::Mat frame;
+
+    // get executing path
+    char pBuf[256];
+    size_t len = sizeof(pBuf);
+
+    int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
+    if(bytes >= 0)
+        pBuf[bytes] = '\0';
+
+    std::string filepath(pBuf);
+
+    for (int i=0; i<images_count; ++i)
+    {
+        // wait for a new frame from camera and store it into 'frame'
+        cam.read(frame);
+        // check if we succeeded
+        if (frame.empty()) {
+            std::cerr << "ERROR! blank frame grabbed\n";
+            break;
+        }
+        // show live and wait for a key with timeout long enough to show images
+        imshow("Live", frame);
+
+        std::string filename = filepath + std::to_string(i) + ".jpg";
+        if (!cv::imwrite(filename, frame)) {
+            std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
+            break;
+        }
+        chessboard_files.push_back(filename);
+
+        if (cv::waitKey(50) >= 0)
+            break;
+    }
+
+    return chessboard_files;
+}
+
 int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& filelist,
                                           cv::Size & boardSize)
 {
@@ -76,7 +121,9 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
 }
 
 // Add scene points and corresponding image points
-void CameraCalibrator::addPoints(const std::vector<cv::Point2f>& imageCorners, const std::vector<cv::Point3f>& objectCorners) {
+void CameraCalibrator::addPoints(const std::vector<cv::Point2f>& imageCorners,
+                                 const std::vector<cv::Point3f>& objectCorners)
+{
 
   // 2D image points from one view
   imagePoints.push_back(imageCorners);
@@ -92,17 +139,31 @@ double CameraCalibrator::calibrate(cv::Size &imageSize)
   // undistorter must be reinitialized
   mustInitUndistort= true;
 
+
   //Output rotations and translations
 
 
   // start calibration
-  return calibrateCamera(objectPoints, // the 3D points
-          imagePoints,  // the image points
-          imageSize,    // image size
-          cameraMatrix, // output camera matrix
-          distCoeffs,   // output distortion matrix
-          rvecs, tvecs, // Rs, Ts
-          flag);        // set options
-//          ,CV_CALIB_USE_INTRINSIC_GUESS);
+  reprojection_err = calibrateCamera(objectPoints, // the 3D points
+                                     imagePoints,  // the image points
+                                     imageSize,    // image size
+                                     cameraMatrix, // output camera matrix
+                                     distCoeffs,   // output distortion matrix
+                                     rvecs, tvecs, // Rs, Ts
+                                     flag);        // set options
+                           //          ,CV_CALIB_USE_INTRINSIC_GUESS);
 
+//vector<Point3f> newObjPoints;
+//  reprojection_err = calibrateCameraRO(objectPoints, // the 3D points
+//                                     imagePoints,  // the image points
+//                                     imageSize,    // image size
+//                                     imageSize.width - 1,
+//                                     cameraMatrix, // output camera matrix
+//                                     distCoeffs,   // output distortion matrix
+//                                     rvecs, tvecs, // Rs, Ts
+//                                     newObjPoints,
+//                                     flag);        // set options
+
+
+  return reprojection_err;
 }

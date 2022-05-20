@@ -8,6 +8,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
 #include <opencv2/highgui/highgui.hpp>
+#include "camera.h"
 
 
 class CameraCalibrator {
@@ -17,8 +18,8 @@ class CameraCalibrator {
         mustInitUndistort(true)
     {};
 
-    cv::Vec3d triangulate(const cv::Mat &p1, const cv::Mat &p2, const cv::Vec2d &u1, const cv::Vec2d &u2);
-    void triangulate(const cv::Mat &p1, const cv::Mat &p2, const std::vector<cv::Vec2d> &pts1, const std::vector<cv::Vec2d> &pts2, std::vector<cv::Vec3d> &pts3D);
+    // Get the calibration images
+    std::vector<std::string> getCalibImages(cameraAPI::Camera& cam);
 
     // Open the chessboard images and extract corner points
     int addChessboardPoints(const std::vector<std::string>& filelist, cv::Size & boardSize);
@@ -28,9 +29,6 @@ class CameraCalibrator {
 
     // Calibrate the camera
     double calibrate(cv::Size &imageSize);
-
-    // Set the calibration flag
-    void setCalibrationFlag(bool radial8CoeffEnabled=false, bool tangentialParamEnabled=false);
 
     // Remove distortion in an image (after calibration)
     cv::Mat remap(const cv::Mat &image);
@@ -43,7 +41,8 @@ class CameraCalibrator {
     cv::Mat get_cameraMatrix() {return cameraMatrix; };
     cv::Mat get_distCoeffs() { return distCoeffs; }
     std::vector<cv::Mat> get_rvecs() { return rvecs; }
-    std::vector<cv::Mat> get_tvecs() {return tvecs; }
+    std::vector<cv::Mat> get_tvecs() { return tvecs; }
+    double get_reprojection_err() { return reprojection_err; }
 
 private:
     // flag to specify how calibration is done
@@ -61,6 +60,8 @@ private:
     cv::Mat distCoeffs;
 
     std::vector<cv::Mat> rvecs, tvecs;
+
+    double reprojection_err;
 };
 
 #endif // CAMERACALIBRATOR_H

@@ -58,7 +58,10 @@ int main(){
     }
 
     Reconstructor reconstructor;
-    reconstructor.init(camera); //calibration
+    //calibration
+    if (!reconstructor.init(camera)) {
+        return -1;
+    }
 
     cv::Mat image1 = cv::imread("imR.png");
     cv::Mat image2 = cv::imread("imL.png");

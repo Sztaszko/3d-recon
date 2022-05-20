@@ -6,7 +6,6 @@
 #include <opencv2/viz.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
-#include <unistd.h>
 
 Reconstructor::Reconstructor()
 {
@@ -45,7 +44,7 @@ Reconstructor::Reconstructor()
  */
 
 
-void Reconstructor::init(cameraAPI::Camera& cam)
+bool Reconstructor::init(cameraAPI::Camera& cam)
 {
 //    chessboard_files = {"boards/1.jpg", "boards/2.jpg",
 //                       "boards/3.jpg","boards/4.jpg",
@@ -62,49 +61,16 @@ void Reconstructor::init(cameraAPI::Camera& cam)
 //                       "boards/25.jpg"};
 
 
-    std::vector<std::string> chessboard_files;
-
-    // Grab and write loop of calibration chessboard
-    int images_count = 25;
-    cv::Mat frame;
-
-    // get executing path
-    char pBuf[256];
-    size_t len = sizeof(pBuf);
-
-    int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
-    if(bytes >= 0)
-        pBuf[bytes] = '\0';
-
-    std::string filepath(pBuf);
-
-    for (int i=0; i<images_count; ++i)
-    {
-        // wait for a new frame from camera and store it into 'frame'
-        cam.read(frame);
-        // check if we succeeded
-        if (frame.empty()) {
-            std::cerr << "ERROR! blank frame grabbed\n";
-            break;
-        }
-        // show live and wait for a key with timeout long enough to show images
-        imshow("Live", frame);
-
-        std::string filename = filepath + std::to_string(i) + ".jpg";
-        if (!cv::imwrite(filename, frame)) {
-            std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
-            break;
-        }
-        chessboard_files.push_back(filename);
-
-        if (cv::waitKey(50) >= 0)
-            break;
-    }
-
+    std::vector<std::string> chessboard_files = cal.getCalibImages(cam);
     cv::Size board_size(9,6);
 
+    if (chessboard_files.empty()) {
+        std::cerr << "Couldnt get chessboard images. Aborting";
+        return false;
+    }
+
     if (!cal.addChessboardPoints(chessboard_files, board_size)) {
-        return ;
+        return false;
     }
 
     cv::Mat img = cv::imread(chessboard_files[0]);
@@ -112,6 +78,7 @@ void Reconstructor::init(cameraAPI::Camera& cam)
 
     cal.calibrate(img_size);
     std::cout << cal.get_cameraMatrix() << std::endl;
+    return true;
 
 }
 
