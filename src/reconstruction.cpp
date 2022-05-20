@@ -101,7 +101,7 @@ void Reconstructor::init(cameraAPI::Camera& cam)
             break;
     }
 
-    cv::Size board_size(7,7);
+    cv::Size board_size(9,6);
 
     if (!cal.addChessboardPoints(chessboard_files, board_size)) {
         return ;

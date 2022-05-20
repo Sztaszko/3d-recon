@@ -51,6 +51,7 @@ int main(){
     cameraAPI::HandCamera camera;
     int deviceID = 0;
     int apiID = cv::CAP_ANY;
+
     if (!camera.open(deviceID, apiID)) {
         std::cerr << "ERROR! Unable to open camera\n";
         return -1;
