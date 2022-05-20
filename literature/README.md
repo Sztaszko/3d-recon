@@ -9,6 +9,12 @@ The unknown parameters are fx and fy (camera focal lengths) and (cx,cy) which ar
 
 The process of determining these two matrices is the calibration. Calculation of these parameters is done through basic geometrical equations. The equations used depend on the chosen calibrating objects.
 
+In summary, a camera calibration algorithm has the following inputs and outputs
+
+1. Inputs : A collection of images with points whose 2D image coordinates and 3D world coordinates are known.
+2. Outputs: The 3×3 camera intrinsic matrix, the rotation and translation of each image. 
+
 Sources:
 
 [1] https://docs.opencv.org/4.x/d4/d94/tutorial_camera_calibration.html
+[2] https://learnopencv.com/camera-calibration-using-opencv/
