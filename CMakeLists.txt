@@ -16,6 +16,7 @@ include_directories(3d-recon PRIVATE inc/ src/)
 add_executable(3d-recon main.cpp inc/reconstruction.h
     inc/cameracalibrator.h
     inc/camera.h
+    inc/settings.h
     src/reconstruction.cpp
     src/cameracalibrator.cpp
     src/camera.cpp)
