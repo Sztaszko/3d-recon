@@ -46,22 +46,9 @@ Reconstructor::Reconstructor()
 
 bool Reconstructor::init(cameraAPI::Camera& cam)
 {
-//    chessboard_files = {"boards/1.jpg", "boards/2.jpg",
-//                       "boards/3.jpg","boards/4.jpg",
-//                       "boards/5.jpg","boards/6.jpg",
-//                       "boards/7.jpg","boards/8.jpg",
-//                       "boards/9.jpg","boards/10.jpg",
-//                       "boards/11.jpg","boards/12.jpg",
-//                       "boards/13.jpg","boards/14.jpg",
-//                       "boards/15.jpg","boards/16.jpg",
-//                       "boards/17.jpg","boards/18.jpg",
-//                       "boards/19.jpg","boards/20.jpg",
-//                       "boards/21.jpg","boards/22.jpg",
-//                       "boards/23.jpg","boards/24.jpg",
-//                       "boards/25.jpg"};
+    cal = CameraCalibrator(&cam);
 
-
-    std::vector<std::string> chessboard_files = cal.getCalibImages(cam);
+    std::vector<std::string> chessboard_files = cal.getCalibImages();
     cv::Size board_size(9,6);
 
     if (chessboard_files.empty()) {

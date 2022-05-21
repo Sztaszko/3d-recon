@@ -14,12 +14,18 @@
 class CameraCalibrator {
     public:
     CameraCalibrator() :
-        flag(0),
-        mustInitUndistort(true)
+        flag(0)
+      , _images_count(25)
+    {};
+
+    CameraCalibrator(cameraAPI::Camera *cam) :
+        flag(0)
+      , _camera(cam)
+      , _images_count(25)
     {};
 
     // Get the calibration images
-    std::vector<std::string> getCalibImages(cameraAPI::Camera& cam);
+    std::vector<std::string> getCalibImages();
 
     // Open the chessboard images and extract corner points
     int addChessboardPoints(const std::vector<std::string>& filelist, cv::Size & boardSize);
@@ -48,9 +54,7 @@ private:
     // flag to specify how calibration is done
     int flag;
 
-    // used in image undistortion
-    cv::Mat map1, map2;
-    bool mustInitUndistort;
+    cameraAPI::Camera* _camera;
 
     std::vector<std::vector<cv::Point3f>> objectPoints;
     std::vector<std::vector<cv::Point2f>> imagePoints;
@@ -62,6 +66,9 @@ private:
     std::vector<cv::Mat> rvecs, tvecs;
 
     double reprojection_err;
+
+    int _images_count;
+    cv::Size _board_size;
 };
 
 #endif // CAMERACALIBRATOR_H

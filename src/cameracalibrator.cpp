@@ -5,16 +5,14 @@
 #include "opencv2/xfeatures2d.hpp"
 #include <unistd.h>
 
-using namespace std;
-using namespace cv;
 
 // Open chessboard images and extract corner points
-std::vector<string> CameraCalibrator::getCalibImages(cameraAPI::Camera& cam)
+std::vector<std::string> CameraCalibrator::getCalibImages()
 {
     std::vector<std::string> chessboard_files;
 
     // Grab and write loop of calibration chessboard
-    int images_count = 25;
+
     cv::Mat frame;
 
     // get executing path
@@ -27,10 +25,10 @@ std::vector<string> CameraCalibrator::getCalibImages(cameraAPI::Camera& cam)
 
     std::string filepath(pBuf);
 
-    for (int i=0; i<images_count; ++i)
+    for (int i=0; i<_images_count; ++i)
     {
         // wait for a new frame from camera and store it into 'frame'
-        cam.read(frame);
+        _camera->read(frame);
         // check if we succeeded
         if (frame.empty()) {
             std::cerr << "ERROR! blank frame grabbed\n";
@@ -57,6 +55,8 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
                                           cv::Size & boardSize)
 {
 
+    _board_size = boardSize;
+
     // the points on the chessboard
     std::vector<cv::Point2f> imageCorners;
     std::vector<cv::Point3f> objectCorners;
@@ -66,8 +66,8 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     // Initialize the chessboard corners
     // in the chessboard reference frame
     // The corners are at 3D location (X,Y,Z)= (i,j,0)
-    for (int i=0; i<boardSize.height; i++) {
-        for (int j=0; j<boardSize.width; j++) {
+    for (int i=0; i<_board_size.height; i++) {
+        for (int j=0; j<_board_size.width; j++) {
 
           objectCorners.push_back(cv::Point3f(i, j, 0.0f));
         }
@@ -85,7 +85,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
         image = cv::imread(filelist[i], 0);
 
         // Get the chessboard corners
-        bool found = cv::findChessboardCorners(image, boardSize, imageCorners, CV_CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FAST_CHECK);
+        bool found = cv::findChessboardCorners(image, _board_size, imageCorners, CV_CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE | cv::CALIB_CB_FAST_CHECK);
 
         if (!found || imageCorners.empty()) {
             std::cout << "ERROR! Not all chessboard corners found. Only " << imageCorners.size() << " were found.\n";
@@ -102,7 +102,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
                           0.1));     // min accuracy
 
       // If we have a good board, add it to our data
-      if (imageCorners.size() == boardSize.area()) {
+      if (imageCorners.size() == _board_size.area()) {
 
             // Add image and scene points from one view
             addPoints(imageCorners, objectCorners);
@@ -112,7 +112,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
 
 
         //Draw the corners
-        cv::drawChessboardCorners(image, boardSize, imageCorners, found);
+        cv::drawChessboardCorners(image, _board_size, imageCorners, found);
         cv::imshow("Corners on Chessboard", image);
         cv::waitKey(100);
     }
@@ -137,11 +137,8 @@ void CameraCalibrator::addPoints(const std::vector<cv::Point2f>& imageCorners,
 double CameraCalibrator::calibrate(cv::Size &imageSize)
 {
   // undistorter must be reinitialized
-  mustInitUndistort= true;
-
 
   //Output rotations and translations
-
 
   // start calibration
   reprojection_err = calibrateCamera(objectPoints, // the 3D points

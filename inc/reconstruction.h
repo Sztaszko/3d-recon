@@ -33,8 +33,8 @@ public:
     std::vector<cv::Vec3d> get_points3D() { return points3D; }
 
 private:
-    std::vector<std::string> chessboard_files;
     CameraCalibrator cal;
+    std::vector<std::string> chessboard_files;
     std::vector<cv::Vec3d> points3D;
 };
 
