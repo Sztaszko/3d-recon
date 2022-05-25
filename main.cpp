@@ -71,23 +71,35 @@ int main(int argc, char *argv[]){
         return -1;
     }
 
+    // TODO get it from command line parser
+    int x_distance = 10; // 10 meters
+    double interval = 0.5; // meters
+
+    int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
+    std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
+
+    // TODO get positions and iterating add interval to camera matrix
+    reconstructor.get_calibrator()->getCameraMatrix();
+
+    for (int i = 0; i < x_distance; )
 
 
-    cv::Mat image1 = cv::imread("imR.png");
-    cv::Mat image2 = cv::imread("imL.png");
 
-    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(image1, image2);
+//    cv::Mat image1 = cv::imread("imR.png");
+//    cv::Mat image2 = cv::imread("imL.png");
 
-    // visualize
-    cv::viz::Viz3d window; //creating a Viz window
+//    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(image1, image2);
 
-    //Displaying the Coordinate Origin (0,0,0)
-    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
+//    // visualize
+//    cv::viz::Viz3d window; //creating a Viz window
 
-    window.setBackgroundColor(cv::viz::Color::black());
+//    //Displaying the Coordinate Origin (0,0,0)
+//    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
 
-    //Displaying the 3D points in green
-    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
-    window.spin();
+//    window.setBackgroundColor(cv::viz::Color::black());
+
+//    //Displaying the 3D points in green
+//    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
+//    window.spin();
 
 }

@@ -46,8 +46,6 @@ class CameraCalibrator {
     cv::Mat getDistCoeffs()   { return distCoeffs; }
     std::vector<std::vector<cv::Point3f>> get_objectPoints() { return objectPoints; }
     std::vector<std::vector<cv::Point2f>> get_imagePoints() { return imagePoints; }
-    cv::Mat get_cameraMatrix() {return cameraMatrix; };
-    cv::Mat get_distCoeffs() { return distCoeffs; }
     std::vector<cv::Mat> get_rvecs() { return rvecs; }
     std::vector<cv::Mat> get_tvecs() { return tvecs; }
     double get_reprojection_err() { return reprojection_err; }

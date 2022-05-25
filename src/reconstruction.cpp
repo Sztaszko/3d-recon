@@ -64,7 +64,7 @@ bool Reconstructor::init(cameraAPI::Camera& cam)
     cv::Size img_size = img.size();
 
     cal.calibrate(img_size);
-    std::cout << cal.get_cameraMatrix() << std::endl;
+    std::cout << "Camera matrix: " << cal.getCameraMatrix() << std::endl;
     return true;
 
 }
@@ -81,7 +81,7 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2
     // ===========================
 
     // Find the essential between image 1 and image 2
-    cv::Mat essential = cv::findEssentialMat(points1, points2, cal.get_cameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+    cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
     std::cout << essential << std::endl;
 
@@ -112,9 +112,9 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2
 
     // undistort and normalize the image points
     std::vector<cv::Vec2d> points1u;
-    cv::undistortPoints(inlierPts1, points1u, cal.get_cameraMatrix(), cal.get_distCoeffs());
+    cv::undistortPoints(inlierPts1, points1u, cal.getCameraMatrix(), cal.getDistCoeffs());
     std::vector<cv::Vec2d> points2u;
-    cv::undistortPoints(inlierPts2, points2u, cal.get_cameraMatrix(), cal.get_distCoeffs());
+    cv::undistortPoints(inlierPts2, points2u, cal.getCameraMatrix(), cal.getDistCoeffs());
 
     // Triangulation
     triangulate(projection1, projection2, points1u, points2u, points3D);
