@@ -11,13 +11,10 @@
 #include "cameracalibrator.h"
 #include "camera.h"
 
-using namespace std;
-using namespace cv;
-using namespace cv::sfm;
 
 
 static void help() {
-  cout
+  std::cout
       << "\n------------------------------------------------------------------------------------\n"
       << " This program performs multiview sfm reconstruction \n"
       << " Usage:\n"
@@ -28,25 +25,35 @@ static void help() {
       << "        cx is the image principal point x coordinates in pixels. \n"
       << "        cy is the image principal point y coordinates in pixels. \n"
       << "------------------------------------------------------------------------------------\n\n"
-      << endl;
+      << std::endl;
 }
-static int getdir(const string _filename, vector<String> &files)
+static int getdir(const std::string _filename, std::vector<cv::String> &files)
 {
-  ifstream myfile(_filename.c_str());
+  std::ifstream myfile(_filename.c_str());
   if (!myfile.is_open()) {
-    cout << "Unable to read file: " << _filename << endl;
+    std::cout << "Unable to read file: " << _filename << std::endl;
     exit(0);
   } else {;
     size_t found = _filename.find_last_of("/\\");
-    string line_str, path_to_file = _filename.substr(0, found);
+    std::string line_str, path_to_file = _filename.substr(0, found);
     while ( getline(myfile, line_str) )
-      files.push_back(path_to_file+string("/") + line_str);
+      files.push_back(path_to_file + std::string("/") + line_str);
   }
   return 1;
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
+
+//    const cv::String keys =
+//                "{help h usage ? |           | print this message            }"
+//                "{@settings      |default.xml| input setting file            }";
+
+//    cv::CommandLineParser parser(argc, argv, keys);
+//    parser.about("This is structure from motion pipeline implementation with known position of the camera.\n"
+//                 "Usage: 3d-recon [configuration file]");
+
+
 
     cameraAPI::HandCamera camera;
     int deviceID = 0;

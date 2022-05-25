@@ -7,9 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenCV REQUIRED)
 find_package(Ceres  REQUIRED)
+find_package(Boost  REQUIRED program_options)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${CERES_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIR})
 
 include_directories(3d-recon PRIVATE inc/ src/)
 
@@ -22,5 +24,10 @@ add_executable(3d-recon main.cpp inc/reconstruction.h
     src/camera.cpp)
 
 
+set(3d-recon-LIBS
+        ${OpenCV_LIBS}
+        ${Boost_LIBRARIES}
+        ${CERES_LIBRARIES}
+    )
 
-target_link_libraries(3d-recon ${OpenCV_LIBS})
+target_link_libraries(3d-recon ${3d-recon-LIBS})

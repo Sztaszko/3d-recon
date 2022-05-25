@@ -234,4 +234,13 @@ private:
 
 };
 
+
+static inline void read(const cv::FileNode& node, Settings& x, const Settings& default_value = Settings())
+{
+    if(node.empty())
+        x = default_value;
+    else
+        x.read(node);
+}
+
 #endif // SETTINGS_H

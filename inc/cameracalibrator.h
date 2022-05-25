@@ -9,6 +9,7 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include <opencv2/highgui/highgui.hpp>
 #include "camera.h"
+#include "settings.h"
 
 
 class CameraCalibrator {
@@ -36,8 +37,9 @@ class CameraCalibrator {
     // Calibrate the camera
     double calibrate(cv::Size &imageSize);
 
-    // Remove distortion in an image (after calibration)
-    cv::Mat remap(const cv::Mat &image);
+//    void saveCameraParams(Settings& s, cv::Size& imageSize,const std::vector<cv::Point3f>& newObjPoints );
+
+    // TODO add remove distorsion from calibration images
 
     // Getters
     cv::Mat getCameraMatrix() { return cameraMatrix; }
