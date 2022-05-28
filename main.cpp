@@ -11,7 +11,7 @@
 #include "reconstruction.h"
 #include "cameracalibrator.h"
 #include "camera.h"
-
+#include <unistd.h>
 
 
 static void help() {
@@ -43,6 +43,19 @@ static int getdir(const std::string _filename, std::vector<cv::String> &files)
   return 1;
 }
 
+std::string get_exec_path() {
+    // get executing path
+    char pBuf[256];
+    size_t len = sizeof(pBuf);
+
+    int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
+    if(bytes >= 0)
+        pBuf[bytes] = '\0';
+
+    std::string path(pBuf);
+    return path;
+}
+
 
 int main(int argc, char *argv[]){
 
@@ -64,6 +77,8 @@ int main(int argc, char *argv[]){
         std::cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
+    std::vector<double> init_camera_position = {0,0,0,0,0,0};
+    camera.init(init_camera_position);
 
     Reconstructor reconstructor;
 
@@ -73,7 +88,7 @@ int main(int argc, char *argv[]){
     }
 
     // TODO get it from command line parser
-    int x_distance = 10; // 10 meters
+    int x_distance = 2; // 10 meters
     double interval = 0.5; // meters
 
     int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
@@ -81,6 +96,38 @@ int main(int argc, char *argv[]){
 
     // TODO get positions and iterating add interval to camera matrix
     CameraCalibrator* calibration = reconstructor.get_calibrator();
+
+    std::string filepath = get_exec_path();
+    std::vector<std::string> images_paths;
+    cv::Mat frame;
+    std::vector<cv::Mat> camera_positions; // TODO enclose somewhere
+
+    camera_positions.push_back(camera.get_camera_position());
+
+    for (int i = 0; i < steps; i++) {
+        double input;
+        std::cout << "Step " << i+1 << std::endl;
+        camera.move(interval);
+        camera_positions.push_back(camera.get_camera_position());
+        camera.read(frame);
+
+        if (frame.empty()) {
+            std::cerr << "ERROR! Blank frame grabbed\n";
+            break;
+        }
+        imshow("Grabbed frame", frame);
+
+        std::string filename = filepath + "_" + std::to_string(i) + ".jpg";
+        if (!cv::imwrite(filename, frame)) {
+            std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
+            break;
+        }
+
+        images_paths.push_back(filename);
+        if (cv::waitKey(50) >= 0)
+            break;
+    }
+
 
     int j = 0;
 //    for (const auto &pos : positions) {
@@ -93,26 +140,22 @@ int main(int argc, char *argv[]){
     std::vector<cv::Mat> rvecs = calibration->get_rvecs();
     std::vector<cv::Mat> tvecs = calibration->get_tvecs();
 
-    for (int i = 0; i < rvecs.size(); ++i) {
-        cv::Mat rotMat;
-        cv::Rodrigues(rvecs[i], rotMat);
-        cv::transpose(rotMat, rotMat);
-        cameraPosition = -rotMat * tvecs[i];
+//    for (int i = 0; i < rvecs.size(); ++i) {
+//        cv::Mat rotMat;
+//        cv::Rodrigues(rvecs[i], rotMat);
+//        cv::transpose(rotMat, rotMat);
+//        cameraPosition = -rotMat * tvecs[i];
 
-        std::cout << i+1 << ". Camera position: " << cameraPosition << "\n";
+//        std::cout << i+1 << ". Camera position: " << cameraPosition << "\n";
 
-    }
+//    }
 
-    std::vector<std::string> chessboard_files = calibration->get_chessboard_files();
+//    std::vector<std::string> chessboard_files = calibration->get_chessboard_files();
 
-    cv::Mat img1 = cv::imread(chessboard_files[0]);
-    cv::Mat img2 = cv::imread(chessboard_files[1]);
+//    cv::Mat img1 = cv::imread(chessboard_files[0]);
+//    cv::Mat img2 = cv::imread(chessboard_files[1]);
 
-    reconstructor.reconstruct(img1, img2);
-
-
-//    for (int i = 0; i < x_distance; )
-
+//    reconstructor.reconstruct(img1, img2);
 
 
 //    cv::Mat image1 = cv::imread("imR.png");

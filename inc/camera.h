@@ -40,7 +40,7 @@ public:
     double get_yaw() { return _yaw; }
 
     virtual std::vector<double> get_position() { return {_posX, _posY, _posZ, _roll, _pitch, _yaw}; }
-    virtual cv::Mat get_camera_position(); //returns C = -inv(R)T matrix, position in world coordinates
+    virtual cv::Mat get_camera_position(); //returns C = - inv(R) * T matrix, position in world coordinates
     virtual cv::Matx44f get_extrinsic_matrix(); //returns [R|T] matrix
 
 
@@ -73,6 +73,7 @@ public:
     HandCamera();
 
     std::vector<double> move(double x, double y, double z) override;
+    std::vector<double> move(double x);
 
 };
 

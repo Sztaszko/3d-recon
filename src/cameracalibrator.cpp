@@ -61,6 +61,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     std::vector<cv::Point2f> imageCorners;
     std::vector<cv::Point3f> objectCorners;
 
+    float real_life_width = 0.023f; // chessboard field width in meters
 
     // 3D Scene Points:
     // Initialize the chessboard corners
@@ -69,7 +70,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     for (int i=0; i<_board_size.height; i++) {
         for (int j=0; j<_board_size.width; j++) {
 
-          objectCorners.push_back(cv::Point3f(i, j, 0.0f));
+          objectCorners.push_back(cv::Point3f(i*real_life_width, j*real_life_width, 0.0f));
         }
     }
 

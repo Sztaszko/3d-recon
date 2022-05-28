@@ -53,7 +53,8 @@ cv::Matx44f cameraAPI::Camera::get_extrinsic_matrix()
 
     cv::Matx44f extrinsic = cv::Matx44f(R.at<double>(0,0), R.at<double>(0,1), R.at<double>(0,2), t.at<double>(0),
                                          R.at<double>(1,0), R.at<double>(1,1), R.at<double>(1,2), t.at<double>(1),
-                                         R.at<double>(2,0), R.at<double>(2,1), R.at<double>(2,2), t.at<double>(2));
+                                         R.at<double>(2,0), R.at<double>(2,1), R.at<double>(2,2), t.at<double>(2),
+                                         0,                 0,                 0,                 1);
 
     return extrinsic;
 }
@@ -67,14 +68,20 @@ cameraAPI::HandCamera::HandCamera() :
 std::vector<double> cameraAPI::HandCamera::move(double x, double y, double z)
 {
     int input;
-    std::cout << "Camera move requested. Please move camera by " << _posX - x << " m";
+    std::cout << "Camera move requested. Please move camera by " << x << " m\n";
     std::cout << "Input actual translated value: ";
     std::cin >> input;
+    std::cout << std::endl;
 
     _posX += input;
 
     // TODO rotation - get from user or calculate from images
 
     return { _posX, _posY, _posZ, _roll, _pitch, _yaw };
+}
+
+std::vector<double> cameraAPI::HandCamera::move(double x)
+{
+    return move(x, 0, 0);
 }
 
