@@ -8,6 +8,7 @@ namespace cameraAPI {
 
 /*!
  * \brief The Camera class - base camera class for camera movement API
+ * Position is in camera coordinates relative to the first position in initialization
  */
 class Camera : public cv::VideoCapture {
 
@@ -39,6 +40,8 @@ public:
     double get_yaw() { return _yaw; }
 
     virtual std::vector<double> get_position() { return {_posX, _posY, _posZ, _roll, _pitch, _yaw}; }
+    virtual cv::Mat get_camera_position(); //returns C = -inv(R)T matrix, position in world coordinates
+    virtual cv::Matx44f get_extrinsic_matrix(); //returns [R|T] matrix
 
 
 protected:

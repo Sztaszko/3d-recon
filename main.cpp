@@ -3,6 +3,7 @@
 #include <opencv2/sfm.hpp>
 #include <opencv2/viz.hpp>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/core.hpp>
 #include "opencv2/xfeatures2d.hpp"
 #include <iostream>
@@ -79,9 +80,38 @@ int main(int argc, char *argv[]){
     std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
 
     // TODO get positions and iterating add interval to camera matrix
-    reconstructor.get_calibrator()->getCameraMatrix();
+    CameraCalibrator* calibration = reconstructor.get_calibrator();
 
-    for (int i = 0; i < x_distance; )
+    int j = 0;
+//    for (const auto &pos : positions) {
+//        ++j;
+//        std::cout << j << ". " << pos << "\n";
+//    }
+
+    cv::Mat cameraPosition;
+
+    std::vector<cv::Mat> rvecs = calibration->get_rvecs();
+    std::vector<cv::Mat> tvecs = calibration->get_tvecs();
+
+    for (int i = 0; i < rvecs.size(); ++i) {
+        cv::Mat rotMat;
+        cv::Rodrigues(rvecs[i], rotMat);
+        cv::transpose(rotMat, rotMat);
+        cameraPosition = -rotMat * tvecs[i];
+
+        std::cout << i+1 << ". Camera position: " << cameraPosition << "\n";
+
+    }
+
+    std::vector<std::string> chessboard_files = calibration->get_chessboard_files();
+
+    cv::Mat img1 = cv::imread(chessboard_files[0]);
+    cv::Mat img2 = cv::imread(chessboard_files[1]);
+
+    reconstructor.reconstruct(img1, img2);
+
+
+//    for (int i = 0; i < x_distance; )
 
 
 

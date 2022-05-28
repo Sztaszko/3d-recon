@@ -65,6 +65,9 @@ bool Reconstructor::init(cameraAPI::Camera& cam)
 
     cal.calibrate(img_size);
     std::cout << "Camera matrix: " << cal.getCameraMatrix() << std::endl;
+
+
+
     return true;
 
 }
@@ -83,13 +86,13 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2
     // Find the essential between image 1 and image 2
     cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
-    std::cout << essential << std::endl;
+    std::cout << "Essential matrix: " << essential << std::endl;
 
     // recover relative camera pose from essential matrix
     cv::Mat rotation, translation;
     cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
-    std::cout << rotation << std::endl;
-    std::cout << translation << std::endl;
+    std::cout << "rotation:" << rotation << std::endl;
+    std::cout << "translation: " << translation << std::endl;
 
     // ==========================
 

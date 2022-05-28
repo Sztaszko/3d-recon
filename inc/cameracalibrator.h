@@ -48,6 +48,7 @@ class CameraCalibrator {
     std::vector<std::vector<cv::Point2f>> get_imagePoints() { return imagePoints; }
     std::vector<cv::Mat> get_rvecs() { return rvecs; }
     std::vector<cv::Mat> get_tvecs() { return tvecs; }
+    std::vector<std::string> get_chessboard_files() { return _chessboard_files; };
     double get_reprojection_err() { return reprojection_err; }
 
 private:
@@ -58,6 +59,7 @@ private:
 
     std::vector<std::vector<cv::Point3f>> objectPoints;
     std::vector<std::vector<cv::Point2f>> imagePoints;
+    std::vector<std::string> _chessboard_files;
 
     // output Matrices
     cv::Mat cameraMatrix;

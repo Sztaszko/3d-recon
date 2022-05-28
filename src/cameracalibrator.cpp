@@ -9,7 +9,7 @@
 // Open chessboard images and extract corner points
 std::vector<std::string> CameraCalibrator::getCalibImages()
 {
-    std::vector<std::string> chessboard_files;
+    _chessboard_files.clear();
 
     // Grab and write loop of calibration chessboard
 
@@ -42,13 +42,13 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
             std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
             break;
         }
-        chessboard_files.push_back(filename);
+        _chessboard_files.push_back(filename);
 
-        if (cv::waitKey(50) >= 0)
+        if (cv::waitKey(250) >= 0)
             break;
     }
 
-    return chessboard_files;
+    return _chessboard_files;
 }
 
 int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& filelist,
