@@ -125,14 +125,22 @@ void cameraAPI::CameraThread::init(int device_id, int api_id)
 
 void cameraAPI::CameraThread::start()
 {
-    _running = true;
+    if (_running) {
+        std::cout << "Thread is already running!\n";
+        return ;
+    }
 
+    _running = true;
     _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
 
 }
 
 void cameraAPI::CameraThread::stop()
 {
+    if (!_running) {
+        std::cout << "Thread is already stopped.\n";
+        return;
+    }
     _running = false;
     _acquisition_thread->join();
 }
