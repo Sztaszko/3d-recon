@@ -12,6 +12,7 @@
 #include "cameracalibrator.h"
 #include "camera.h"
 #include <unistd.h>
+#include <locale>
 
 
 static void help() {
@@ -67,8 +68,6 @@ int main(int argc, char *argv[]){
 //    parser.about("This is structure from motion pipeline implementation with known position of the camera.\n"
 //                 "Usage: 3d-recon [configuration file]");
 
-
-
     cameraAPI::HandCameraPosition cameraPositions;
 
 
@@ -104,7 +103,6 @@ int main(int argc, char *argv[]){
     std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
 
     for (int i = 0; i < steps; i++) {
-        double input;
         std::cout << "Step " << i+1 << std::endl;
         cameraPositions.move(interval);
         cv::Mat frame = acquisition_thread.read();

@@ -85,7 +85,7 @@ cameraAPI::HandCameraPosition::HandCameraPosition() :
 
 std::vector<double> cameraAPI::HandCameraPosition::move(double x, double y, double z)
 {
-    int input;
+    double input;
     std::cout << "Camera move requested. Please move camera by " << x << " m\n";
     std::cout << "Input actual translated value: ";
     std::cin >> input;
