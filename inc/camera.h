@@ -103,7 +103,7 @@ private:
     std::mutex _queue_mutex;
 
 protected:
-    CameraThread(int device_id, int api_id);
+    CameraThread() {};
     ~CameraThread() {};
     void _read();
 
@@ -119,15 +119,6 @@ public:
 
     /*!
      * \brief GetInstance - static method controlling access to the singleton instance
-     * On the first run creates object and places it into static field
-     * \param device_id - VideoCapture camera deviceID
-     * \param api_id - VideoCapture apiID
-     * \return CameraThread signleton instance
-     */
-    static CameraThread& GetInstance(int device_id, int api_id);
-
-    /*!
-     * \brief GetInstance - static method controlling access to the singleton instance
      * On the first run creates object with default values
      * \return CameraThread signleton instance
      */
@@ -140,24 +131,19 @@ public:
      */
     cv::Mat read();
 
+    void init(int device_id, int api_id);
+
+    void start();
+
     void stop();
 
 };
 
 
-inline CameraThread &CameraThread::GetInstance(int device_id, int api_id)
-{
-    static CameraThread instance(device_id, api_id);
-    return instance;
-}
-
 inline CameraThread &CameraThread::GetInstance()
 {
-    int deviceID = 0;
-    int apiID = cv::CAP_ANY;
 
-    static CameraThread instance(deviceID, apiID);
-
+    static CameraThread instance;
     return instance;
 }
 

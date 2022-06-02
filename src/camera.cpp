@@ -109,16 +109,6 @@ std::vector<double> cameraAPI::HandCameraPosition::move(double x)
 
 /* ============== CameraThread ============= */
 
-cameraAPI::CameraThread::CameraThread(int device_id, int api_id)
-{
-    _device_id = device_id;
-    _api_id = api_id;
-
-    _running = true;
-
-    _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
-}
-
 cv::Mat cameraAPI::CameraThread::read()
 {
 
@@ -127,10 +117,26 @@ cv::Mat cameraAPI::CameraThread::read()
     return frame;
 }
 
+void cameraAPI::CameraThread::init(int device_id, int api_id)
+{
+    _device_id = device_id;
+    _api_id = api_id;
+}
+
+void cameraAPI::CameraThread::start()
+{
+    _running = true;
+
+    _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
+
+}
+
 void cameraAPI::CameraThread::stop()
 {
     _running = false;
+    _acquisition_thread->join();
 }
+
 
 void cameraAPI::CameraThread::_read()
 {

@@ -75,7 +75,9 @@ int main(int argc, char *argv[]){
     int deviceID = -1;
     int apiID = cv::CAP_ANY;
 
-    cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance(deviceID, apiID);
+    cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance();
+    acquisition_thread.init(deviceID, apiID);
+    acquisition_thread.start();
 
     std::vector<double> init_camera_position = {0,0,0,0,0,0};
     cameraPositions.init(init_camera_position);
@@ -123,6 +125,8 @@ int main(int argc, char *argv[]){
         if (cv::waitKey(500) >= 0)
             break;
     }
+
+    acquisition_thread.stop();
 
 
     int j = 0;
