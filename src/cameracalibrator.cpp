@@ -26,7 +26,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
     for (int i=0; i<_images_count; ++i)
     {
         // wait for a new frame from camera and store it into 'frame'
-        cv::Mat frame = _camera.read();
+        cv::Mat frame = cameraAPI::CameraThread::GetInstance().read();
         // check if we succeeded
         if (frame.empty()) {
             std::cerr << "ERROR! blank frame grabbed\n";

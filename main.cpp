@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
     cameraAPI::HandCameraPosition cameraPositions;
 
 
-    int deviceID = -1;
+    int deviceID = 0;
     int apiID = cv::CAP_ANY;
 
     cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance();
