@@ -69,47 +69,43 @@ int main(int argc, char *argv[]){
 
 
 
-    cameraAPI::HandCamera camera;
+    cameraAPI::HandCameraPosition cameraPositions;
+
+
     int deviceID = 0;
     int apiID = cv::CAP_ANY;
 
-    if (!camera.open(deviceID, apiID)) {
-        std::cerr << "ERROR! Unable to open camera\n";
-        return -1;
-    }
+    cameraAPI::CameraThread* acquisition_thread = cameraAPI::CameraThread::GetInstance(deviceID, apiID);
+
     std::vector<double> init_camera_position = {0,0,0,0,0,0};
-    camera.init(init_camera_position);
+    cameraPositions.init(init_camera_position);
 
     Reconstructor reconstructor;
 
     //calibration
-    if (!reconstructor.init(camera)) {
+    if (!reconstructor.init()) {
         return -1;
     }
 
     // TODO get it from command line parser
-    int x_distance = 2; // 10 meters
+    int x_distance = 2; // meters
     double interval = 0.5; // meters
 
-    int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
-    std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
 
     // TODO get positions and iterating add interval to camera matrix
     CameraCalibrator* calibration = reconstructor.get_calibrator();
 
     std::string filepath = get_exec_path();
     std::vector<std::string> images_paths;
-    cv::Mat frame;
-    std::vector<cv::Mat> camera_positions; // TODO enclose somewhere
 
-    camera_positions.push_back(camera.get_camera_position());
+    int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
+    std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
 
     for (int i = 0; i < steps; i++) {
         double input;
         std::cout << "Step " << i+1 << std::endl;
-        camera.move(interval);
-        camera_positions.push_back(camera.get_camera_position());
-        camera.read(frame);
+        cameraPositions.move(interval);
+        cv::Mat frame = acquisition_thread->read();
 
         if (frame.empty()) {
             std::cerr << "ERROR! Blank frame grabbed\n";
@@ -124,7 +120,7 @@ int main(int argc, char *argv[]){
         }
 
         images_paths.push_back(filename);
-        if (cv::waitKey(50) >= 0)
+        if (cv::waitKey(500) >= 0)
             break;
     }
 

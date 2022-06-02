@@ -44,9 +44,9 @@ Reconstructor::Reconstructor()
  */
 
 
-bool Reconstructor::init(cameraAPI::Camera& cam)
+bool Reconstructor::init()
 {
-    cal = CameraCalibrator(&cam);
+    cal = CameraCalibrator();
 
     std::vector<std::string> chessboard_files = cal.getCalibImages();
     cv::Size board_size(9,6);
@@ -65,8 +65,6 @@ bool Reconstructor::init(cameraAPI::Camera& cam)
 
     cal.calibrate(img_size);
     std::cout << "Camera matrix: " << cal.getCameraMatrix() << std::endl;
-
-
 
     return true;
 

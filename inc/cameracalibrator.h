@@ -17,13 +17,9 @@ class CameraCalibrator {
     CameraCalibrator() :
         flag(0)
       , _images_count(25)
-    {};
-
-    CameraCalibrator(cameraAPI::Camera *cam) :
-        flag(0)
-      , _camera(cam)
-      , _images_count(25)
-    {};
+    {
+        _camera = cameraAPI::CameraThread::GetInstance();
+    };
 
     // Get the calibration images
     std::vector<std::string> getCalibImages();
@@ -55,7 +51,7 @@ private:
     // flag to specify how calibration is done
     int flag;
 
-    cameraAPI::Camera* _camera;
+    cameraAPI::CameraThread* _camera;
 
     std::vector<std::vector<cv::Point3f>> objectPoints;
     std::vector<std::vector<cv::Point2f>> imagePoints;

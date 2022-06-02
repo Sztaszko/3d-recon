@@ -9,7 +9,7 @@ class Reconstructor {
 public:
     Reconstructor();
 
-    bool init(cameraAPI::Camera& cam);
+    bool init();
 
     std::vector<cv::Vec3d> reconstruct(cv::Mat image1, cv::Mat image2);
 

@@ -6,9 +6,8 @@
 const double PI = 3.14159265;
 
 
-cameraAPI::Camera::Camera() :
-    cv::VideoCapture()
-  , _posX(0)
+cameraAPI::CameraPosition::CameraPosition() :
+    _posX(0)
   , _posY(0)
   , _posZ(0)
   , _roll(0)
@@ -18,8 +17,10 @@ cameraAPI::Camera::Camera() :
 
 }
 
-void cameraAPI::Camera::init(std::vector<double> position)
+void cameraAPI::CameraPosition::init(std::vector<double> position)
 {
+    _camera_positions.clear();
+
     try {
         _posX = position.at(0);
         _posY = position.at(1);
@@ -31,9 +32,11 @@ void cameraAPI::Camera::init(std::vector<double> position)
         std::cerr << "Init vector error: " << err.what() << "\n";
         std::cout << "Camera position assumed at: " << _posX, _posY, _posZ, _roll, _pitch, _yaw;
     }
+
+    _camera_positions.push_back(get_current_camera_position());
 }
 
-cv::Mat cameraAPI::Camera::get_camera_position()
+cv::Mat cameraAPI::CameraPosition::get_current_camera_position()
 {
     cv::Mat t({_posX, _posY, _posZ});
     cv::Mat rotVec({_roll, _pitch, _yaw});
@@ -44,7 +47,7 @@ cv::Mat cameraAPI::Camera::get_camera_position()
     return -(R)*t;
 }
 
-cv::Matx44f cameraAPI::Camera::get_extrinsic_matrix()
+cv::Matx44f cameraAPI::CameraPosition::get_current_extrinsic_matrix()
 {
     cv::Mat t({_posX, _posY, _posZ});
     cv::Mat rotVec({_roll, _pitch, _yaw});
@@ -59,13 +62,27 @@ cv::Matx44f cameraAPI::Camera::get_extrinsic_matrix()
     return extrinsic;
 }
 
+cv::Mat cameraAPI::CameraPosition::get_camera_position(int index)
+{
+    cv::Mat posMat;
+    try {
+    posMat = _camera_positions.at(index);
 
-cameraAPI::HandCamera::HandCamera() :
-    Camera()
+    } catch (const std::out_of_range &e) {
+        std::cout << "Index out of range return empty position matrix: " << e.what() << "\n";
+        posMat = cv::Mat();
+    }
+
+    return posMat;
+}
+
+
+cameraAPI::HandCameraPosition::HandCameraPosition() :
+    CameraPosition()
 {
 }
 
-std::vector<double> cameraAPI::HandCamera::move(double x, double y, double z)
+std::vector<double> cameraAPI::HandCameraPosition::move(double x, double y, double z)
 {
     int input;
     std::cout << "Camera move requested. Please move camera by " << x << " m\n";
@@ -77,11 +94,50 @@ std::vector<double> cameraAPI::HandCamera::move(double x, double y, double z)
 
     // TODO rotation - get from user or calculate from images
 
+    _camera_positions.push_back(get_current_camera_position());
+
     return { _posX, _posY, _posZ, _roll, _pitch, _yaw };
 }
 
-std::vector<double> cameraAPI::HandCamera::move(double x)
+std::vector<double> cameraAPI::HandCameraPosition::move(double x)
 {
     return move(x, 0, 0);
+}
+
+
+
+/* ============== CameraThread ============= */
+
+cameraAPI::CameraThread::CameraThread(int device_id, int api_id)
+{
+    if (!_camera.open(device_id, api_id)) {
+        std::cerr << "ERROR! Unable to open camera. Not starting acquisition thread.\n";
+        return ;
+    }
+
+    _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
+}
+
+cv::Mat cameraAPI::CameraThread::read()
+{
+    cv::Mat frame = _frames_queue.front();
+    _frames_queue.pop();
+    return frame;
+}
+
+void cameraAPI::CameraThread::_read()
+{
+    while (true) {
+        cv::Mat frame;
+        if (!_camera.read(frame)) {
+            std::cerr << "Camera read failed. Ending acquisition";
+            break;
+        }
+
+        if (!_frames_queue.empty()) {
+            _frames_queue.pop(); // discarding unproccessed frame
+        }
+        _frames_queue.push(frame);
+    }
 }
 

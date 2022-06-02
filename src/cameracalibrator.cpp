@@ -13,8 +13,6 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
 
     // Grab and write loop of calibration chessboard
 
-    cv::Mat frame;
-
     // get executing path
     char pBuf[256];
     size_t len = sizeof(pBuf);
@@ -28,7 +26,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
     for (int i=0; i<_images_count; ++i)
     {
         // wait for a new frame from camera and store it into 'frame'
-        _camera->read(frame);
+        cv::Mat frame = _camera->read();
         // check if we succeeded
         if (frame.empty()) {
             std::cerr << "ERROR! blank frame grabbed\n";
@@ -47,6 +45,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
         if (cv::waitKey(250) >= 0)
             break;
     }
+
 
     return _chessboard_files;
 }
