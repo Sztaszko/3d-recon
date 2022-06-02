@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <opencv2/calib3d.hpp>
+#include <condition_variable>
 
 const double PI = 3.14159265;
 
@@ -110,24 +111,35 @@ std::vector<double> cameraAPI::HandCameraPosition::move(double x)
 
 cameraAPI::CameraThread::CameraThread(int device_id, int api_id)
 {
-    if (!_camera.open(device_id, api_id)) {
-        std::cerr << "ERROR! Unable to open camera. Not starting acquisition thread.\n";
-        return ;
-    }
+    _device_id = device_id;
+    _api_id = api_id;
+
+    _running = true;
 
     _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
 }
 
 cv::Mat cameraAPI::CameraThread::read()
 {
-    cv::Mat frame = _frames_queue.front();
-    _frames_queue.pop();
+
+    cv::Mat frame = _frames_queue.dequeue();
+
     return frame;
+}
+
+void cameraAPI::CameraThread::stop()
+{
+    _running = false;
 }
 
 void cameraAPI::CameraThread::_read()
 {
-    while (true) {
+    if (!_camera.open(_device_id, _api_id)) {
+        std::cerr << "ERROR! Unable to open camera. Not starting acquisition thread.\n";
+        return ;
+    }
+
+    while (_running) {
         cv::Mat frame;
         if (!_camera.read(frame)) {
             std::cerr << "Camera read failed. Ending acquisition";
@@ -135,9 +147,12 @@ void cameraAPI::CameraThread::_read()
         }
 
         if (!_frames_queue.empty()) {
-            _frames_queue.pop(); // discarding unproccessed frame
+            _frames_queue.dequeue(); // discarding unproccessed frame
         }
-        _frames_queue.push(frame);
+        _frames_queue.enqueue(frame);
+
     }
+
+    _camera.release();
 }
 

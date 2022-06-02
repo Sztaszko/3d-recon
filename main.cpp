@@ -72,10 +72,10 @@ int main(int argc, char *argv[]){
     cameraAPI::HandCameraPosition cameraPositions;
 
 
-    int deviceID = 0;
+    int deviceID = -1;
     int apiID = cv::CAP_ANY;
 
-    cameraAPI::CameraThread* acquisition_thread = cameraAPI::CameraThread::GetInstance(deviceID, apiID);
+    cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance(deviceID, apiID);
 
     std::vector<double> init_camera_position = {0,0,0,0,0,0};
     cameraPositions.init(init_camera_position);
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]){
         double input;
         std::cout << "Step " << i+1 << std::endl;
         cameraPositions.move(interval);
-        cv::Mat frame = acquisition_thread->read();
+        cv::Mat frame = acquisition_thread.read();
 
         if (frame.empty()) {
             std::cerr << "ERROR! Blank frame grabbed\n";

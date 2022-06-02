@@ -46,7 +46,6 @@ Reconstructor::Reconstructor()
 
 bool Reconstructor::init()
 {
-    cal = CameraCalibrator();
 
     std::vector<std::string> chessboard_files = cal.getCalibImages();
     cv::Size board_size(9,6);

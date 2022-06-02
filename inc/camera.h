@@ -5,6 +5,8 @@
 #include <opencv2/videoio.hpp>
 #include <queue>
 #include <thread>
+#include <atomic>
+#include <safequeue.h>
 
 namespace cameraAPI {
 
@@ -86,8 +88,6 @@ public:
     std::vector<double> move(double x, double y, double z) override;
     std::vector<double> move(double x);
 
-
-
 };
 
 
@@ -98,8 +98,9 @@ public:
 class CameraThread {
 
 private:
-    static CameraThread* instance;
-    static std::mutex _mutex;
+    std::atomic<bool> _running;
+    int _device_id, _api_id;
+    std::mutex _queue_mutex;
 
 protected:
     CameraThread(int device_id, int api_id);
@@ -107,9 +108,8 @@ protected:
     void _read();
 
     cv::VideoCapture _camera;
-    std::queue<cv::Mat> _frames_queue;
+    SafeQueue<cv::Mat> _frames_queue;
     std::unique_ptr<std::thread> _acquisition_thread;
-
 
 public:
 
@@ -124,14 +124,14 @@ public:
      * \param api_id - VideoCapture apiID
      * \return CameraThread signleton instance
      */
-    static CameraThread* GetInstance(int device_id, int api_id);
+    static CameraThread& GetInstance(int device_id, int api_id);
 
     /*!
      * \brief GetInstance - static method controlling access to the singleton instance
      * On the first run creates object with default values
      * \return CameraThread signleton instance
      */
-    static CameraThread* GetInstance();
+    static CameraThread& GetInstance();
 
 
     /*!
@@ -140,29 +140,24 @@ public:
      */
     cv::Mat read();
 
+    void stop();
+
 };
 
-CameraThread* CameraThread::instance{nullptr};
-std::mutex CameraThread::_mutex;
 
-inline CameraThread *CameraThread::GetInstance(int device_id, int api_id)
+inline CameraThread &CameraThread::GetInstance(int device_id, int api_id)
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    if (instance == nullptr) {
-        instance = new CameraThread(device_id, api_id);
-    }
+    static CameraThread instance(device_id, api_id);
     return instance;
 }
 
-inline CameraThread *CameraThread::GetInstance()
+inline CameraThread &CameraThread::GetInstance()
 {
     int deviceID = 0;
     int apiID = cv::CAP_ANY;
 
-    std::lock_guard<std::mutex> lock(_mutex);
-    if (instance == nullptr) {
-        instance = new CameraThread(deviceID, apiID);
-    }
+    static CameraThread instance(deviceID, apiID);
+
     return instance;
 }
 

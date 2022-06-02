@@ -19,6 +19,7 @@ add_executable(3d-recon main.cpp inc/reconstruction.h
     inc/cameracalibrator.h
     inc/camera.h
     inc/settings.h
+    inc/safequeue.h
     src/reconstruction.cpp
     src/cameracalibrator.cpp
     src/camera.cpp)
