@@ -25,9 +25,8 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
 
     for (int i=0; i<_images_count; ++i)
     {
-        // wait for a new frame from camera and store it into 'frame'
         cv::Mat frame = cameraAPI::CameraThread::GetInstance().read();
-        // check if we succeeded
+
         if (frame.empty()) {
             std::cerr << "ERROR! blank frame grabbed\n";
             break;
@@ -68,15 +67,14 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     // The corners are at 3D location (X,Y,Z)= (i,j,0)
     for (int i=0; i<_board_size.height; i++) {
         for (int j=0; j<_board_size.width; j++) {
-
           objectCorners.push_back(cv::Point3f(i*real_life_width, j*real_life_width, 0.0f));
         }
     }
 
     // 2D Image points:
-    cv::Mat image; // to contain chessboard image
+    cv::Mat image;
     int successes = 0;
-    // for all viewpoints
+
     for (int i=0; i<filelist.size(); i++) {
 
         std::cout << "Read file: " << filelist[i] << "\n";

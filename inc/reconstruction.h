@@ -9,8 +9,13 @@ class Reconstructor {
 public:
     Reconstructor();
 
+    /*!
+     * \brief init - perform calibration using calibrator cal
+     * \return true - calibration successful, false - calibration failed
+     */
     bool init();
 
+    // TODO change this function
     std::vector<cv::Vec3d> reconstruct(cv::Mat image1, cv::Mat image2);
 
     // getters

@@ -20,18 +20,40 @@ class CameraCalibrator {
     {
     };
 
-    // Get the calibration images
+    /*!
+     * \brief getCalibImages - reading loop from acquisition thread of the
+     * calibration chessboard. Saves captured images in the working directory
+     * \return list of saved files of calibration chessboard
+     */
     std::vector<std::string> getCalibImages();
 
-    // Open the chessboard images and extract corner points
+    /*!
+     * \brief addChessboardPoints - Open the chessboard images and extract corner points.
+     * Fills imageCorners and objectCorners fields correspondingly.
+     * Additionaly draws chessboard corners.
+     * \param filelist - list of calib images files
+     * \param boardSize - size of the calibration board
+     * \return count of successes inserted corner points
+     */
     int addChessboardPoints(const std::vector<std::string>& filelist, cv::Size & boardSize);
 
-    // Add scene points and corresponding image points
+    /*!
+     * \brief addPoints - append corresponding imageCorners and objectCorners to imagePoints and objectPoints
+     * \param imageCorners
+     * \param objectCorners
+     */
     void addPoints(const std::vector<cv::Point2f>& imageCorners, const std::vector<cv::Point3f>& objectCorners);
 
-    // Calibrate the camera
+    /*!
+     * \brief calibrate - calibrate camera based on objectPoints and imagePoints. Saves results to
+     * cameraMatrix, distCoeffs, rvecs and tvecs.
+     * \param imageSize
+     * \return reprojection error
+     */
     double calibrate(cv::Size &imageSize);
 
+
+    // TODO add saving and reading calibrated camera params
 //    void saveCameraParams(Settings& s, cv::Size& imageSize,const std::vector<cv::Point3f>& newObjPoints );
 
     // TODO add remove distorsion from calibration images

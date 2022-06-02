@@ -40,6 +40,38 @@ public:
      */
     virtual std::vector<double> move(double x, double y, double z) = 0;
 
+    /*!
+     * \brief get_current_position
+     * \return current position as a vector
+     */
+    virtual std::vector<double> get_current_position() { return {_posX, _posY, _posZ, _roll, _pitch, _yaw}; }
+
+    /*!
+     * \brief get_current_camera_position
+     * \return C = - inv(R) * T matrix, position in world coordinates
+     */
+    virtual cv::Mat get_current_camera_position();
+
+    /*!
+     * \brief get_current_extrinsic_matrix
+     * \return [R|T] matrix of current camera postion
+     */
+    virtual cv::Matx44f get_current_extrinsic_matrix();
+
+    /*!
+     * \brief get_camera_position - access to the position at given index in the past
+     * \param index - position index from the past
+     * \return camera position in world coordinates
+     */
+    virtual cv::Mat get_camera_position(int index);
+
+    /*!
+     * \brief get_camera_extrinsic
+     * \param index
+     * \return
+     */
+    virtual cv::Matx44f get_camera_extrinsic(int index);
+
     //getters
     double get_posX() { return _posX; }
     double get_posY() { return _posY; }
@@ -49,19 +81,22 @@ public:
     double get_roll() { return _roll; }
     double get_yaw() { return _yaw; }
 
-    virtual std::vector<double> get_current_position() { return {_posX, _posY, _posZ, _roll, _pitch, _yaw}; }
-    virtual cv::Mat get_current_camera_position(); //returns C = - inv(R) * T matrix, position in world coordinates
-    virtual cv::Matx44f get_current_extrinsic_matrix(); //returns [R|T] matrix
-
-    virtual cv::Mat get_camera_position(int index);
-
-
 protected:
     double _posX, _posY, _posZ;
 
     double _pitch, _roll, _yaw; //radians
 
+    /*!
+     * \brief _camera_positions - holds global camera positions matrices
+     * saved every move performed
+     */
     std::vector<cv::Mat> _camera_positions;
+
+    /*!
+     * \brief _camera_extrinsics - holds camera extrinsic matrices in relative
+     * translation and rotation to the first camera position
+     */
+    std::vector<cv::Matx44f> _camera_extrinsics;
 };
 
 
@@ -119,7 +154,7 @@ public:
 
     /*!
      * \brief GetInstance - static method controlling access to the singleton instance
-     * On the first run creates object with default values
+     * On the first run creates object with set values in init()
      * \return CameraThread signleton instance
      */
     static CameraThread& GetInstance();
@@ -131,10 +166,21 @@ public:
      */
     cv::Mat read();
 
+    /*!
+     * \brief init - initializes values for video capture api
+     * \param device_id - camera id
+     * \param api_id - id as in VideoCapture
+     */
     void init(int device_id, int api_id);
 
+    /*!
+     * \brief start - starts acquisition thread
+     */
     void start();
 
+    /*!
+     * \brief stop - stops thread and waits by join() method
+     */
     void stop();
 
 };
@@ -142,7 +188,6 @@ public:
 
 inline CameraThread &CameraThread::GetInstance()
 {
-
     static CameraThread instance;
     return instance;
 }

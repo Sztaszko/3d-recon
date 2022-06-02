@@ -21,6 +21,7 @@ cameraAPI::CameraPosition::CameraPosition() :
 void cameraAPI::CameraPosition::init(std::vector<double> position)
 {
     _camera_positions.clear();
+    _camera_extrinsics.clear();
 
     try {
         _posX = position.at(0);
@@ -35,6 +36,7 @@ void cameraAPI::CameraPosition::init(std::vector<double> position)
     }
 
     _camera_positions.push_back(get_current_camera_position());
+    _camera_extrinsics.push_back(get_current_extrinsic_matrix());
 }
 
 cv::Mat cameraAPI::CameraPosition::get_current_camera_position()
@@ -77,6 +79,20 @@ cv::Mat cameraAPI::CameraPosition::get_camera_position(int index)
     return posMat;
 }
 
+cv::Matx44f cameraAPI::CameraPosition::get_camera_extrinsic(int index)
+{
+    cv::Matx44f extrMat;
+    try {
+    extrMat = _camera_extrinsics.at(index);
+
+    } catch (const std::out_of_range &e) {
+        std::cout << "Index out of range return empty position matrix: " << e.what() << "\n";
+        extrMat = cv::Matx44f();
+    }
+
+    return extrMat;
+}
+
 
 cameraAPI::HandCameraPosition::HandCameraPosition() :
     CameraPosition()
@@ -96,6 +112,7 @@ std::vector<double> cameraAPI::HandCameraPosition::move(double x, double y, doub
     // TODO rotation - get from user or calculate from images
 
     _camera_positions.push_back(get_current_camera_position());
+    _camera_extrinsics.push_back(get_current_extrinsic_matrix());
 
     return { _posX, _posY, _posZ, _roll, _pitch, _yaw };
 }
