@@ -69,10 +69,20 @@ bool Reconstructor::init()
 
 }
 
-std::vector<cv::Vec3d> Reconstructor::reconstruct(cv::Mat image1, cv::Mat image2)
+std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions)
 {
+    if (filenames.size() < 3) {
+        std::cout << "There is less than 3 images. It is not enough to reconstruction. Aborting.\n";
+        return points3D;
+    }
 
+    cv::Mat image1 = cv::imread(filenames.at(0));
+    cv::Mat image2 = cv::imread(filenames.at(1));
+
+    // image points
     std::vector<cv::Point2f> points1, points2;
+
+
     match_points(image1, image2, points1, points2);
 
     cv::Mat inliers;
@@ -129,7 +139,6 @@ void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
                                  std::vector<cv::Point2f> &points2)
 {
     cv::Mat matchImage;
-    std::vector<std::vector<cv::Point2f>> ret_arr;
 
     // vector of keypoints and descriptors
     std::vector<cv::KeyPoint> keypoints1;

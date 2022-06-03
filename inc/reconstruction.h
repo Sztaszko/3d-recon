@@ -16,7 +16,7 @@ public:
     bool init();
 
     // TODO change this function
-    std::vector<cv::Vec3d> reconstruct(cv::Mat image1, cv::Mat image2);
+    std::vector<cv::Vec3d> reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions);
 
     // getters
     std::vector<cv::Vec3d> get_points3D() { return points3D; }

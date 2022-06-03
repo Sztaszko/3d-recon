@@ -34,7 +34,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
         // show live and wait for a key with timeout long enough to show images
         imshow("Live", frame);
 
-        std::string filename = filepath + std::to_string(i) + ".jpg";
+        std::string filename = filepath + "_calibration_" + std::to_string(i) + ".jpg";
         if (!cv::imwrite(filename, frame)) {
             std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
             break;

@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 
     Reconstructor reconstructor;
 
-    //calibration
+    // perform calibration
     if (!reconstructor.init()) {
         return -1;
     }
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
         }
         imshow("Grabbed frame", frame);
 
-        std::string filename = filepath + "_" + std::to_string(i) + ".jpg";
+        std::string filename = filepath + "_reconstruction_" + std::to_string(i) + ".jpg";
         if (!cv::imwrite(filename, frame)) {
             std::cerr << "ERROR! Couldnt save a file: " << filename << "\n";
             break;
@@ -126,40 +126,14 @@ int main(int argc, char *argv[]){
 
     acquisition_thread.stop();
 
-
-    int j = 0;
-//    for (const auto &pos : positions) {
-//        ++j;
-//        std::cout << j << ". " << pos << "\n";
-//    }
-
-    cv::Mat cameraPosition;
-
     std::vector<cv::Mat> rvecs = calibration->get_rvecs();
     std::vector<cv::Mat> tvecs = calibration->get_tvecs();
-
-//    for (int i = 0; i < rvecs.size(); ++i) {
-//        cv::Mat rotMat;
-//        cv::Rodrigues(rvecs[i], rotMat);
-//        cv::transpose(rotMat, rotMat);
-//        cameraPosition = -rotMat * tvecs[i];
-
-//        std::cout << i+1 << ". Camera position: " << cameraPosition << "\n";
-
-//    }
-
-//    std::vector<std::string> chessboard_files = calibration->get_chessboard_files();
-
-//    cv::Mat img1 = cv::imread(chessboard_files[0]);
-//    cv::Mat img2 = cv::imread(chessboard_files[1]);
-
-//    reconstructor.reconstruct(img1, img2);
 
 
 //    cv::Mat image1 = cv::imread("imR.png");
 //    cv::Mat image2 = cv::imread("imL.png");
 
-//    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(image1, image2);
+//    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 
 //    // visualize
 //    cv::viz::Viz3d window; //creating a Viz window
