@@ -23,7 +23,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
 
     std::string filepath(pBuf);
 
-    for (int i=0; i<_images_count; ++i)
+    for (int i = 0; i < _images_count; ++i)
     {
         cv::Mat frame = cameraAPI::CameraThread::GetInstance().read();
 
@@ -163,117 +163,31 @@ double CameraCalibrator::calibrate(cv::Size &imageSize)
   return reprojection_err;
 }
 
-//void CameraCalibrator::saveCameraParams(Settings& s, cv::Size& imageSize,const std::vector<cv::Point3f>& newObjPoints)
-//{
-//    cv::FileStorage fs( s.outputFileName, cv::FileStorage::WRITE );
+void CameraCalibrator::saveCameraParams(std::string filename)
+{
+    cv::FileStorage file(filename, cv::FileStorage::WRITE);
 
-//    time_t tm;
-//    time( &tm );
-//    struct tm *t2 = localtime( &tm );
-//    char buf[1024];
-//    strftime( buf, sizeof(buf), "%c", t2 );
+    file << "CameraMatrix" << cameraMatrix;
+    file << "DistCoeffs" << distCoeffs;
+    file << "RVecs" << rvecs;
+    file << "TVecs" << tvecs;
+    file << "ReprojectionErr" << reprojection_err;
+    file << "BoardSize" << _board_size;
 
-//    fs << "calibration_time" << buf;
+    file.release();
+}
 
-////    if( !rvecs.empty() || !reprojErrs.empty() )
-////        fs << "nr_of_frames" << (int)std::max(rvecs.size(), reprojErrs.size());
-//    fs << "image_width" << imageSize.width;
-//    fs << "image_height" << imageSize.height;
-//    fs << "board_width" << s.boardSize.width;
-//    fs << "board_height" << s.boardSize.height;
-//    fs << "square_size" << s.squareSize;
+void CameraCalibrator::readCameraParams(std::string filename)
+{
+    cv::FileStorage fs;
+    fs.open(filename, cv::FileStorage::READ);
 
-//    if( !s.useFisheye && s.flag & cv::CALIB_FIX_ASPECT_RATIO )
-//        fs << "fix_aspect_ratio" << s.aspectRatio;
+    fs["CameraMatrix"] >> cameraMatrix;
+    fs["DistCoeffs"] >> distCoeffs;
+    fs["RVecs"] >> rvecs;
+    fs["TVecs"] >> tvecs;
+    fs["ReprojectionErr"] >> reprojection_err;
+    fs["BoardSize"] >> _board_size;
 
-//    if (s.flag)
-//    {
-//        std::stringstream flagsStringStream;
-//        if (s.useFisheye)
-//        {
-//            flagsStringStream << "flags:"
-//                << (s.flag & cv::fisheye::CALIB_FIX_SKEW ? " +fix_skew" : "")
-//                << (s.flag & cv::fisheye::CALIB_FIX_K1 ? " +fix_k1" : "")
-//                << (s.flag & cv::fisheye::CALIB_FIX_K2 ? " +fix_k2" : "")
-//                << (s.flag & cv::fisheye::CALIB_FIX_K3 ? " +fix_k3" : "")
-//                << (s.flag & cv::fisheye::CALIB_FIX_K4 ? " +fix_k4" : "")
-//                << (s.flag & cv::fisheye::CALIB_RECOMPUTE_EXTRINSIC ? " +recompute_extrinsic" : "");
-//        }
-//        else
-//        {
-//            flagsStringStream << "flags:"
-//                << (s.flag & cv::CALIB_USE_INTRINSIC_GUESS ? " +use_intrinsic_guess" : "")
-//                << (s.flag & cv::CALIB_FIX_ASPECT_RATIO ? " +fix_aspectRatio" : "")
-//                << (s.flag & cv::CALIB_FIX_PRINCIPAL_POINT ? " +fix_principal_point" : "")
-//                << (s.flag & cv::CALIB_ZERO_TANGENT_DIST ? " +zero_tangent_dist" : "")
-//                << (s.flag & cv::CALIB_FIX_K1 ? " +fix_k1" : "")
-//                << (s.flag & cv::CALIB_FIX_K2 ? " +fix_k2" : "")
-//                << (s.flag & cv::CALIB_FIX_K3 ? " +fix_k3" : "")
-//                << (s.flag & cv::CALIB_FIX_K4 ? " +fix_k4" : "")
-//                << (s.flag & cv::CALIB_FIX_K5 ? " +fix_k5" : "");
-//        }
-//        fs.writeComment(flagsStringStream.str());
-//    }
-
-//    fs << "flags" << s.flag;
-
-//    fs << "fisheye_model" << s.useFisheye;
-
-//    fs << "camera_matrix" << cameraMatrix;
-//    fs << "distortion_coefficients" << distCoeffs;
-
-////    fs << "avg_reprojection_error" << totalAvgErr;
-////    if (s.writeExtrinsics && !reprojErrs.empty())
-////        fs << "per_view_reprojection_errors" << Mat(reprojErrs);
-
-//    if(s.writeExtrinsics && !rvecs.empty() && !tvecs.empty() )
-//    {
-//        CV_Assert(rvecs[0].type() == tvecs[0].type());
-//        cv::Mat bigmat((int)rvecs.size(), 6, CV_MAKETYPE(rvecs[0].type(), 1));
-//        bool needReshapeR = rvecs[0].depth() != 1 ? true : false;
-//        bool needReshapeT = tvecs[0].depth() != 1 ? true : false;
-
-//        for( size_t i = 0; i < rvecs.size(); i++ )
-//        {
-//            cv::Mat r = bigmat(cv::Range(int(i), int(i+1)), cv::Range(0,3));
-//            cv::Mat t = bigmat(cv::Range(int(i), int(i+1)), cv::Range(3,6));
-
-//            if(needReshapeR)
-//                rvecs[i].reshape(1, 1).copyTo(r);
-//            else
-//            {
-//                //*.t() is MatExpr (not Mat) so we can use assignment operator
-//                CV_Assert(rvecs[i].rows == 3 && rvecs[i].cols == 1);
-//                r = rvecs[i].t();
-//            }
-
-//            if(needReshapeT)
-//                tvecs[i].reshape(1, 1).copyTo(t);
-//            else
-//            {
-//                CV_Assert(tvecs[i].rows == 3 && tvecs[i].cols == 1);
-//                t = tvecs[i].t();
-//            }
-//        }
-//        fs.writeComment("a set of 6-tuples (rotation vector + translation vector) for each view");
-//        fs << "extrinsic_parameters" << bigmat;
-//    }
-
-//    if(s.writePoints && !imagePoints.empty() )
-//    {
-//        cv::Mat imagePtMat((int)imagePoints.size(), (int)imagePoints[0].size(), CV_32FC2);
-//        for( size_t i = 0; i < imagePoints.size(); i++ )
-//        {
-//            cv::Mat r = imagePtMat.row(int(i)).reshape(2, imagePtMat.cols);
-//            cv::Mat imgpti(imagePoints[i]);
-//            imgpti.copyTo(r);
-//        }
-//        fs << "image_points" << imagePtMat;
-//    }
-
-//    if( s.writeGrid && !newObjPoints.empty() )
-//    {
-//        fs << "grid_points" << newObjPoints;
-//    }
-//}
-
+    fs.release();
+}

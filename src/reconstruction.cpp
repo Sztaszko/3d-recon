@@ -63,6 +63,7 @@ bool Reconstructor::init()
     cv::Size img_size = img.size();
 
     cal.calibrate(img_size);
+    cal.saveCameraParams("cameraParams.xml");
     std::cout << "Camera matrix: " << cal.getCameraMatrix() << std::endl;
 
     return true;
@@ -89,7 +90,7 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
     for (int i = 0; i < filenames.size() - 1; ++i) {
 
         cv::Mat image1 = cv::imread(filenames.at(i));
-        cv::Mat image2 = cv::imread(filenames.at(i+1));
+        cv::Mat image2 = cv::imread(filenames.at(i + 1));
 
         // image points
         std::vector<cv::Point2f> points1, points2;

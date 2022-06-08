@@ -54,7 +54,9 @@ class CameraCalibrator {
 
 
     // TODO add saving and reading calibrated camera params
-//    void saveCameraParams(Settings& s, cv::Size& imageSize,const std::vector<cv::Point3f>& newObjPoints );
+    void saveCameraParams(std::string filename);
+
+    void readCameraParams(std::string filename);
 
     // TODO add remove distorsion from calibration images
 
