@@ -81,6 +81,8 @@ public:
     double get_roll() { return _roll; }
     double get_yaw() { return _yaw; }
 
+    std::vector<cv::Matx44f> get_camera_extrinsics() { return _camera_extrinsics; }
+
 protected:
     double _posX, _posY, _posZ;
 

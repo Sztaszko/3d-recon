@@ -92,10 +92,6 @@ int main(int argc, char *argv[]){
     int x_distance = 2; // meters
     double interval = 0.5; // meters
 
-
-    // TODO get positions and iterating add interval to camera matrix
-    CameraCalibrator* calibration = reconstructor.get_calibrator();
-
     std::string filepath = get_exec_path();
     std::vector<std::string> images_paths;
 
@@ -125,13 +121,6 @@ int main(int argc, char *argv[]){
     }
 
     acquisition_thread.stop();
-
-    std::vector<cv::Mat> rvecs = calibration->get_rvecs();
-    std::vector<cv::Mat> tvecs = calibration->get_tvecs();
-
-
-//    cv::Mat image1 = cv::imread("imR.png");
-//    cv::Mat image2 = cv::imread("imL.png");
 
 //    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 

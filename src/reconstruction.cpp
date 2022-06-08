@@ -69,67 +69,94 @@ bool Reconstructor::init()
 
 }
 
-std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions)
+std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames,
+                                                  cameraAPI::CameraPosition& positions)
 {
     if (filenames.size() < 3) {
         std::cout << "There is less than 3 images. It is not enough to reconstruction. Aborting.\n";
         return points3D;
     }
 
-    cv::Mat image1 = cv::imread(filenames.at(0));
-    cv::Mat image2 = cv::imread(filenames.at(1));
+    if (filenames.size() != positions.get_camera_extrinsics().size()) {
+        // TODO maybe calculate missing positions by PnP
+        std::cout << "Images and positions sizes are different. Aborting.\n";
+        return points3D;
+    }
 
-    // image points
-    std::vector<cv::Point2f> points1, points2;
-
-
-    match_points(image1, image2, points1, points2);
-
-    cv::Mat inliers;
-
-    //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
-    // ===========================
-
-    // Find the essential between image 1 and image 2
-    cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
-
-    std::cout << "Essential matrix: " << essential << std::endl;
-
-    // recover relative camera pose from essential matrix
-    cv::Mat rotation, translation;
-    cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
-    std::cout << "rotation:" << rotation << std::endl;
-    std::cout << "translation: " << translation << std::endl;
-
-    // ==========================
-
-    // get the inliers after replacing code above
-//    cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
+    // TODO find the best match between images in the begginning
 
 
-    // compose projection matrix from R,T
-    std::pair<cv::Mat, cv::Mat> projections = get_projection_mats(rotation, translation);
-    cv::Mat projection1 = projections.first;
-    cv::Mat projection2 = projections.second;
+    for (int i = 0; i < filenames.size() - 1; ++i) {
+
+        cv::Mat image1 = cv::imread(filenames.at(i));
+        cv::Mat image2 = cv::imread(filenames.at(i+1));
+
+        // image points
+        std::vector<cv::Point2f> points1, points2;
+
+        match_points(image1, image2, points1, points2);
+
+        cv::Mat inliers;
+        cv::Mat rotation, translation;
+
+        // get the inliers after replacing code above
+        cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
+
+        cv::Matx44f position = positions.get_camera_extrinsic(0);
+
+        rotation = cv::Mat(cv::Matx33f( position(0,0), position(0,1), position(0,2),
+                                        position(1,0), position(1,1), position(1,2),
+                                        position(2,0), position(2,1), position(2,2)), true);
+        translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
+
+        // debug
+        std::cout << "rotation from positions: " << rotation << "\n";
+        std::cout << "translation from positions : " << translation << "\n";
+
+        //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
+        // ===========================
+
+        // Find the essential between image 1 and image 2
+        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+
+        std::cout << "Essential matrix: " << essential << std::endl;
+
+        // recover relative camera pose from essential matrix
+        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
+        std::cout << "rotation from essential: " << rotation << std::endl;
+        std::cout << "translation from essential: " << translation << std::endl;
+
+        // ==========================
 
 
-    // to contain the inliers
-    std::vector<cv::Vec2d> inlierPts1;
-    std::vector<cv::Vec2d> inlierPts2;
 
-    create_inliers(points1, points2, inlierPts1, inlierPts2, inliers);
+        // compose projection matrix from R,T
+        std::pair<cv::Mat, cv::Mat> projections = get_projection_mats(rotation, translation);
+        cv::Mat projection1 = projections.first;
+        cv::Mat projection2 = projections.second;
 
 
-    // undistort and normalize the image points
-    std::vector<cv::Vec2d> points1u;
-    cv::undistortPoints(inlierPts1, points1u, cal.getCameraMatrix(), cal.getDistCoeffs());
-    std::vector<cv::Vec2d> points2u;
-    cv::undistortPoints(inlierPts2, points2u, cal.getCameraMatrix(), cal.getDistCoeffs());
+        // to contain the inliers
+        std::vector<cv::Vec2d> inlierPts1;
+        std::vector<cv::Vec2d> inlierPts2;
 
-    // Triangulation
-    triangulate(projection1, projection2, points1u, points2u, points3D);
+        create_inliers(points1, points2, inlierPts1, inlierPts2, inliers);
+
+
+        // undistort and normalize the image points
+        std::vector<cv::Vec2d> points1u;
+        cv::undistortPoints(inlierPts1, points1u, cal.getCameraMatrix(), cal.getDistCoeffs());
+        std::vector<cv::Vec2d> points2u;
+        cv::undistortPoints(inlierPts2, points2u, cal.getCameraMatrix(), cal.getDistCoeffs());
+
+        // Triangulation
+        triangulate(projection1, projection2, points1u, points2u, points3D);
+
+    }
 
     std::cout<<"3D points :" << points3D.size() << std::endl;
+
+    // TODO make bundle andjustment
 
     return points3D;
 }
