@@ -7,11 +7,13 @@ void utils::help()
       << " This program performs multiview incremental sfm reconstruction \n"
       << " with known camera positions while taking pictures \n"
       << " Usage:\n"
-      << "        3d-recon <cameraParamsFile> <reconstructionFiles>\n"
+      << "        3d-recon <cameraParamsFile> <reconstructionFiles> <distance> <interval>\n"
       << " where: cameraParamsFile - is the file absolute path into your system which contains\n"
       << "        camera parameters obtained in calibration. Should be xml or yml. \n"
       << "        reconstructionFiles - is the file absolute path into your system which contains\n"
       << "        the list of images to use for reconstruction.\n"
+      << "        distance - distance of the hand camera movement\n"
+      << "        interval - interval of the distance between pictures\n"
       << "------------------------------------------------------------------------------------\n\n"
       << std::endl;
 }
