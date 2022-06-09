@@ -70,6 +70,14 @@ bool Reconstructor::init()
 
 }
 
+bool Reconstructor::init(std::string camera_params_file)
+{
+    if (!cal.readCameraParams(camera_params_file))
+        return false;
+    std::cout << "Camera matrix: " << cal.getCameraMatrix() << std::endl;
+    return true;
+}
+
 std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames,
                                                   cameraAPI::CameraPosition& positions)
 {

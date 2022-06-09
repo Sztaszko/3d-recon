@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d_c.h>
 #include "opencv2/xfeatures2d.hpp"
-#include <unistd.h>
+#include "utils.h"
 
 
 // Open chessboard images and extract corner points
@@ -13,15 +13,7 @@ std::vector<std::string> CameraCalibrator::getCalibImages()
 
     // Grab and write loop of calibration chessboard
 
-    // get executing path
-    char pBuf[256];
-    size_t len = sizeof(pBuf);
-
-    int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
-    if(bytes >= 0)
-        pBuf[bytes] = '\0';
-
-    std::string filepath(pBuf);
+    std::string filepath = utils::get_exec_path();
 
     for (int i = 0; i < _images_count; ++i)
     {
@@ -177,10 +169,11 @@ void CameraCalibrator::saveCameraParams(std::string filename)
     file.release();
 }
 
-void CameraCalibrator::readCameraParams(std::string filename)
+bool CameraCalibrator::readCameraParams(std::string filename)
 {
     cv::FileStorage fs;
-    fs.open(filename, cv::FileStorage::READ);
+    if (!fs.open(filename, cv::FileStorage::READ))
+        return false;
 
     fs["CameraMatrix"] >> cameraMatrix;
     fs["DistCoeffs"] >> distCoeffs;
@@ -190,4 +183,5 @@ void CameraCalibrator::readCameraParams(std::string filename)
     fs["BoardSize"] >> _board_size;
 
     fs.release();
+    return true;
 }

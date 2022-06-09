@@ -56,7 +56,7 @@ class CameraCalibrator {
     // TODO add saving and reading calibrated camera params
     void saveCameraParams(std::string filename);
 
-    void readCameraParams(std::string filename);
+    bool readCameraParams(std::string filename);
 
     // TODO add remove distorsion from calibration images
 

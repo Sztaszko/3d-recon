@@ -20,9 +20,11 @@ add_executable(3d-recon main.cpp inc/reconstruction.h
     inc/camera.h
     inc/settings.h
     inc/safequeue.h
+    inc/utils.h
     src/reconstruction.cpp
     src/cameracalibrator.cpp
-    src/camera.cpp)
+    src/camera.cpp
+    src/utils.cpp)
 
 
 set(3d-recon-LIBS
