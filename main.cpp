@@ -46,6 +46,7 @@ int main(int argc, char *argv[]){
 
     cameraAPI::HandCameraPosition cameraPositions;
     Reconstructor reconstructor;
+    std::vector<std::string> images_paths;
 
     // create acquisition thread
     cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance();
@@ -85,7 +86,6 @@ int main(int argc, char *argv[]){
         cameraPositions.init(init_camera_position);
 
         std::string filepath = utils::get_exec_path();
-        std::vector<std::string> images_paths;
 
         int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
         std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
@@ -111,11 +111,21 @@ int main(int argc, char *argv[]){
             if (cv::waitKey(500) >= 0)
                 break;
         }
+
+        std::vector<cv::Matx44f> camera_extrinsics = cameraPositions.get_camera_extrinsics();
+        cv::FileStorage images_file("images.xml", cv::FileStorage::WRITE);
+        images_file << "filenames" << images_paths;
+        images_file << "steps" << (int) camera_extrinsics.size();
+        for (int j = 0; j < camera_extrinsics.size(); ++j) {
+            images_file << "position" + std::to_string(j) << camera_extrinsics[j];
+        }
+        images_file.release();
     }
+
 
     acquisition_thread.stop();
 
-//    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
+    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 
 //    // visualize
 //    cv::viz::Viz3d window; //creating a Viz window

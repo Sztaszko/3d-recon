@@ -20,8 +20,7 @@ cameraAPI::CameraPosition::CameraPosition() :
 
 void cameraAPI::CameraPosition::init(std::vector<double> position)
 {
-    _camera_positions.clear();
-    _camera_extrinsics.clear();
+    clear();
 
     try {
         _posX = position.at(0);
@@ -93,6 +92,14 @@ cv::Matx44f cameraAPI::CameraPosition::get_camera_extrinsic(int index)
     return extrMat;
 }
 
+void cameraAPI::CameraPosition::clear()
+{
+    _camera_positions.clear();
+    _camera_extrinsics.clear();
+}
+
+
+// ================ HandCamera ===================
 
 cameraAPI::HandCameraPosition::HandCameraPosition() :
     CameraPosition()
@@ -148,7 +155,7 @@ void cameraAPI::CameraThread::start()
     }
 
     _running = true;
-    _acquisition_thread.reset(new std::thread(&CameraThread::_read, this));
+    _acquisition_thread = std::thread(&CameraThread::_read, this);
 
 }
 
@@ -159,9 +166,15 @@ void cameraAPI::CameraThread::stop()
         return;
     }
     _running = false;
-    _acquisition_thread->join();
+    _acquisition_thread.join();
 }
 
+
+cameraAPI::CameraThread::~CameraThread()
+{
+    if (_running)
+        stop();
+}
 
 void cameraAPI::CameraThread::_read()
 {

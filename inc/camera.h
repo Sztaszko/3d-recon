@@ -72,6 +72,8 @@ public:
      */
     virtual cv::Matx44f get_camera_extrinsic(int index);
 
+    virtual void clear();
+
     //getters
     double get_posX() { return _posX; }
     double get_posY() { return _posY; }
@@ -141,12 +143,12 @@ private:
 
 protected:
     CameraThread() {};
-    ~CameraThread() {};
+    ~CameraThread();
     void _read();
 
     cv::VideoCapture _camera;
     SafeQueue<cv::Mat> _frames_queue;
-    std::unique_ptr<std::thread> _acquisition_thread;
+    std::thread _acquisition_thread;
 
 public:
 

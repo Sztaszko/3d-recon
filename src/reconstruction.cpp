@@ -88,7 +88,8 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
 
     if (filenames.size() != positions.get_camera_extrinsics().size()) {
         // TODO maybe calculate missing positions by PnP
-        std::cout << "Images and positions sizes are different. Aborting.\n";
+        std::cout << "Images and positions sizes are different : " << filenames.size()
+                  << ", " << positions.get_camera_extrinsics().size() <<". Aborting.\n";
         return points3D;
     }
 
