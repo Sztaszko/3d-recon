@@ -15,6 +15,13 @@ public:
      */
     bool init();
 
+    /*!
+     * \brief init - overloaded init() loading params from file
+     * \param camera_params_file - absolute path to xml or yml file with calibration parameters
+     * \return true - if reading successful, false - if reading failed
+     */
+    bool init(std::string camera_params_file);
+
     // TODO change this function
     std::vector<cv::Vec3d> reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions);
 
