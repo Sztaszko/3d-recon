@@ -120,21 +120,21 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
         translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
 
         // debug
-        std::cout << "rotation from positions: " << rotation << "\n";
-        std::cout << "translation from positions : " << translation << "\n";
+//        std::cout << "rotation from positions: " << rotation << "\n";
+//        std::cout << "translation from positions : " << translation << "\n";
 
         //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
         // ===========================
 
-        // Find the essential between image 1 and image 2
-        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+//        // Find the essential between image 1 and image 2
+//        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
-        std::cout << "Essential matrix: " << essential << std::endl;
+//        std::cout << "Essential matrix: " << essential << std::endl;
 
-        // recover relative camera pose from essential matrix
-        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
-        std::cout << "rotation from essential: " << rotation << std::endl;
-        std::cout << "translation from essential: " << translation << std::endl;
+//        // recover relative camera pose from essential matrix
+//        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
+//        std::cout << "rotation from essential: " << rotation << std::endl;
+//        std::cout << "translation from essential: " << translation << std::endl;
 
         // ==========================
 
@@ -219,7 +219,7 @@ void Reconstructor::create_inliers(std::vector<cv::Point2f> points1, std::vector
                                    std::vector<cv::Vec2d> &inlierPts1, std::vector<cv::Vec2d> &inlierPts2, cv::Mat inliers)
 {
     // create inliers input point vector for triangulation
-    int j(0);
+    int j = 0;
     for (int i = 0; i < inliers.rows; i++) {
       if (inliers.at<uchar>(i)) {
         inlierPts1.push_back(cv::Vec2d(points1[i].x, points1[i].y));

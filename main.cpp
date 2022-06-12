@@ -126,16 +126,16 @@ int main(int argc, char *argv[]){
 
     std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 
-//    // visualize
-//    cv::viz::Viz3d window; //creating a Viz window
+    // visualize
+    cv::viz::Viz3d window; //creating a Viz window
 
-//    //Displaying the Coordinate Origin (0,0,0)
-//    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
+    //Displaying the Coordinate Origin (0,0,0)
+    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
 
-//    window.setBackgroundColor(cv::viz::Color::black());
+    window.setBackgroundColor(cv::viz::Color::black());
 
-//    //Displaying the 3D points in green
-//    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
-//    window.spin();
+    //Displaying the 3D points in green
+    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
+    window.spin();
 
 }
