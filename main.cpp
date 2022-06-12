@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
                 "{@reconstructionFiles  |<none>                  | input list of images and cam positions   }"
                 "{d distance            |2                       | distance of handCamera trajectory <meters>}"
                 "{i interval            |0.2                     | interval between pictures        <meters>}"
+                "{c camera              |1                       | camera ID                                }"
             ;
 
     cv::CommandLineParser parser(argc, argv, keys);
@@ -40,8 +41,8 @@ int main(int argc, char *argv[]){
     std::string reconstructionFiles = parser.get<cv::String>("@reconstructionFiles");
     double x_distance = parser.get<double>("d");
     double interval = parser.get<double>("i");
+    int deviceID = parser.get<int>("c");
 
-    int deviceID = 0;
     int apiID = cv::CAP_ANY;
 
     cameraAPI::HandCameraPosition cameraPositions;
@@ -75,15 +76,13 @@ int main(int argc, char *argv[]){
     }
 
     if (!reconstructionFiles.empty()) {
-//        cameraPositions.read(reconstructionFiles);
-//        std::vector<std::string> files = utils::read_file_list();
-//        reconstructor.reconstruct(files, cameraPositions);
-        std::cout << "Reading from file not supported yet\n";
+        cameraPositions.read(reconstructionFiles);
+        images_paths = utils::read_file_list(reconstructionFiles);
+
     } else {
         //acquisition loop
 
-        std::vector<double> init_camera_position = {0,0,0,0,0,0};
-        cameraPositions.init(init_camera_position);
+        cameraPositions.clear();
 
         std::string filepath = utils::get_exec_path();
 

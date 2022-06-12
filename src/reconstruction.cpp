@@ -112,7 +112,7 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
         // get the inliers after replacing code above
         cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
 
-        cv::Matx44f position = positions.get_camera_extrinsic(0);
+        cv::Matx44f position = positions.get_camera_extrinsic(i);
 
         rotation = cv::Mat(cv::Matx33f( position(0,0), position(0,1), position(0,2),
                                         position(1,0), position(1,1), position(1,2),

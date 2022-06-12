@@ -98,6 +98,31 @@ void cameraAPI::CameraPosition::clear()
     _camera_extrinsics.clear();
 }
 
+bool cameraAPI::CameraPosition::read(std::string filename)
+{
+    cv::FileStorage fs;
+    if (!fs.open(filename, cv::FileStorage::READ)) {
+        std::cout << filename << " cannot be opened.";
+        return false;
+    }
+
+    int steps;
+    fs["steps"] >> steps;
+    if (steps == 0) {
+        std::cout << "Warning. Steps in file are 0.\n";
+        return false;
+    }
+
+    for (int i = 0; i < steps; ++i) {
+        cv::Matx44f mat;
+        fs["position" + std::to_string(i)] >> mat;
+
+        _camera_extrinsics.push_back(mat);
+    }
+
+    return true;
+}
+
 
 // ================ HandCamera ===================
 

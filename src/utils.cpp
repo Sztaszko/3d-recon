@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <opencv2/core/persistence.hpp>
 
 void utils::help()
 {
@@ -30,4 +31,18 @@ std::string utils::get_exec_path()
 
     std::string path(pBuf);
     return path;
+}
+
+std::vector<std::string> utils::read_file_list(std::string filename)
+{
+    cv::FileStorage fs;
+
+    if (!fs.open(filename, cv::FileStorage::READ)) {
+        std::cout << "Couldnt open " << filename << std::endl;
+        return std::vector<std::string>();
+    }
+
+    std::vector<std::string> ret_val;
+    fs["filenames"] >> ret_val;
+    return ret_val;
 }

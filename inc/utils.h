@@ -9,9 +9,9 @@ namespace utils {
 
 void help();
 
-
 std::string get_exec_path();
 
+std::vector<std::string> read_file_list(std::string filename);
 
 //static int getdir(const std::string _filename, std::vector<cv::String> &files)
 //{

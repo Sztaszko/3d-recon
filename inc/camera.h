@@ -74,6 +74,13 @@ public:
 
     virtual void clear();
 
+    /*!
+     * \brief read - reads camera extrinsics from file
+     * \param filename - file path saved in acquisition
+     * \return true - if reading was successful, false - if error occured
+     */
+    virtual bool read(std::string filename);
+
     //getters
     double get_posX() { return _posX; }
     double get_posY() { return _posY; }
