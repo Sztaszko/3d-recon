@@ -1,4 +1,7 @@
+#define CERES_FOUND 1
+
 #include "reconstruction.h"
+#include "opencv2/sfm/reconstruct.hpp"
 #include "opencv2/xfeatures2d.hpp"
 #include <opencv2/sfm.hpp>
 #include <opencv2/calib3d.hpp>
@@ -6,6 +9,8 @@
 #include <opencv2/viz.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+
+#include <chrono>
 
 Reconstructor::Reconstructor()
 {
@@ -81,6 +86,8 @@ bool Reconstructor::init(std::string camera_params_file)
 std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames,
                                                   cameraAPI::CameraPosition& positions)
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     if (filenames.size() < 3) {
         std::cout << "There is less than 3 images. It is not enough to reconstruction. Aborting.\n";
         return points3D;
@@ -109,6 +116,22 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
         cv::Mat inliers;
         cv::Mat rotation, translation;
 
+
+//        //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
+//        // ===========================
+
+//        // Find the essential between image 1 and image 2
+//        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+
+////        std::cout << "Essential matrix: " << essential << std::endl;
+
+//        // recover relative camera pose from essential matrix
+//        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
+//        std::cout << "rotation from essential: " << rotation << std::endl;
+//        std::cout << "translation from essential: " << translation << std::endl;
+
+//        // ==========================
+
         // get the inliers after replacing code above
         cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
 
@@ -119,25 +142,9 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
                                         position(2,0), position(2,1), position(2,2)), true);
         translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
 
-        // debug
+//         debug
 //        std::cout << "rotation from positions: " << rotation << "\n";
 //        std::cout << "translation from positions : " << translation << "\n";
-
-        //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
-        // ===========================
-
-//        // Find the essential between image 1 and image 2
-//        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
-
-//        std::cout << "Essential matrix: " << essential << std::endl;
-
-//        // recover relative camera pose from essential matrix
-//        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
-//        std::cout << "rotation from essential: " << rotation << std::endl;
-//        std::cout << "translation from essential: " << translation << std::endl;
-
-        // ==========================
-
 
 
         // compose projection matrix from R,T
@@ -164,11 +171,33 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
 
     }
 
+    auto stop = std::chrono::high_resolution_clock::now();
+
+
+    std::cout<<"Time for my reconstruction passed :" << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
     std::cout<<"3D points :" << points3D.size() << std::endl;
 
     // TODO make bundle andjustment
 
+
+
     return points3D;
+}
+
+std::vector<cv::Mat> Reconstructor::reconstruct_opencv(std::vector<std::string> filenames)
+{
+    points3D.clear();
+
+    auto start = std::chrono::high_resolution_clock::now();
+    bool is_projective = true;
+    std::vector<cv::Mat> Rs_est, ts_est, points_3D_estimated;
+    cv::sfm::reconstruct(filenames, Rs_est, ts_est, cal.getCameraMatrix(), points_3D_estimated, is_projective);
+    auto stop = std::chrono::high_resolution_clock::now();
+
+    std::cout<<"Time for opencv reconstruction passed :" << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << std::endl;
+    std::cout<<"3D points opencv:" << points_3D_estimated.size() << std::endl;
+
+    return points_3D_estimated;
 }
 
 void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
