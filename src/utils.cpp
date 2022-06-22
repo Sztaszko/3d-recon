@@ -46,3 +46,23 @@ std::vector<std::string> utils::read_file_list(std::string filename)
     fs["filenames"] >> ret_val;
     return ret_val;
 }
+
+bool utils::save_point_cloud(std::string filename, std::vector<cv::Vec3d> pointCloud)
+{
+    std::ofstream outfile(filename);
+    outfile << "ply\n" << "format ascii 1.0\n" << "comment VTK generated PLY File\n";
+    outfile << "obj_info vtkPolyData points and polygons : vtk4.0\n" << "element vertex " << pointCloud.size() << "\n";
+    outfile << "property float x\n" << "property float y\n" << "property float z\n" << "element face 0\n";
+    outfile << "property list uchar int vertex_indices\n" << "end_header\n";
+    for (int i = 0; i < pointCloud.size(); i++)
+    {
+        cv::Vec3d point = pointCloud.at(i);
+        outfile << point[0] << " ";
+        outfile << point[1] << " ";
+        outfile << point[2] << " ";
+        outfile << "\n";
+    }
+    outfile.close();
+
+    return true;
+}

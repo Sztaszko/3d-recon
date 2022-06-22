@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 
 namespace utils {
@@ -27,6 +28,8 @@ std::vector<std::string> read_file_list(std::string filename);
 //  }
 //  return 1;
 //}
+
+bool save_point_cloud(std::string filename, std::vector<cv::Vec3d> pointCloud);
 
 }
 
