@@ -22,8 +22,9 @@ public:
      */
     bool init(std::string camera_params_file);
 
-    // TODO change this function
     std::vector<cv::Vec3d> reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions);
+
+    std::vector<cv::Mat> reconstruct_opencv(std::vector<std::string> filenames);
 
     // getters
     std::vector<cv::Vec3d> get_points3D() { return points3D; }

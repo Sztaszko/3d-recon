@@ -126,16 +126,37 @@ int main(int argc, char *argv[]){
 
     std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 
-    // visualize
-    cv::viz::Viz3d window; //creating a Viz window
+    // to compare
+    std::vector<cv::Mat> points3D_opencv = reconstructor.reconstruct_opencv(images_paths);
 
-    //Displaying the Coordinate Origin (0,0,0)
-    window.showWidget("coordinate", cv::viz::WCoordinateSystem());
+    std::vector<cv::Vec3d> points3D_opencv_vec;
+    for (auto &it : points3D_opencv) {
+        cv::Vec3d vec((double*)it.data);
+        points3D_opencv_vec.push_back(vec);
+
+    }
+
+    // visualize
+    cv::viz::Viz3d window;
+
+    cv::viz::WCloud my_cloud = cv::viz::WCloud(points3D, cv::viz::Color::green());
+    my_cloud.setRenderingProperty(cv::viz::POINT_SIZE, 3);
+
+    cv::viz::WCloud opencv_cloud = cv::viz::WCloud(points3D_opencv_vec, cv::viz::Color::red());
+    opencv_cloud.setRenderingProperty(cv::viz::POINT_SIZE, 3);
+
+    //Displaying the Camera at origin (0,0,0)
+    window.showWidget("camera", cv::viz::WCameraPosition(cv::Matx33d(reconstructor.get_calibrator()->getCameraMatrix()), 5.0));
 
     window.setBackgroundColor(cv::viz::Color::black());
 
     //Displaying the 3D points in green
-    window.showWidget("points", cv::viz::WCloud(points3D, cv::viz::Color::green()));
+    window.showWidget("my_points", my_cloud);
+    window.showWidget("opencv_points", opencv_cloud);
     window.spin();
+
+    utils::save_point_cloud("my_points.ply", points3D);
+
+    utils::save_point_cloud("opencv_points.ply", points3D_opencv_vec);
 
 }
