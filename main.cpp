@@ -37,24 +37,27 @@ int main(int argc, char *argv[]){
         return 0;
     }
 
+    // ============= parse values to variables =============
     std::string cameraParamsFile = parser.get<cv::String>("@cameraParams");
     std::string reconstructionFiles = parser.get<cv::String>("@reconstructionFiles");
     double x_distance = parser.get<double>("d");
     double interval = parser.get<double>("i");
     int deviceID = parser.get<int>("c");
 
-    int apiID = cv::CAP_ANY;
-
+    // ============= initialization =============
     cameraAPI::HandCameraPosition cameraPositions;
     Reconstructor reconstructor;
     std::vector<std::string> images_paths;
 
-    // create acquisition thread
+    int apiID = cv::CAP_ANY;
+
+    // ============= create acquisition thread =============
     cameraAPI::CameraThread& acquisition_thread = cameraAPI::CameraThread::GetInstance();
     acquisition_thread.init(deviceID, apiID);
     acquisition_thread.start();
 
     if (!cameraParamsFile.empty()) {
+        // ============= read camera intrisics =============
         std::string extension = cameraParamsFile.substr(cameraParamsFile.find_last_of(".") + 1);
 
         if (extension != "xml" && extension != "yml") {
@@ -63,30 +66,29 @@ int main(int argc, char *argv[]){
             return -1;
         }
 
-        // load params from file
         if (!reconstructor.init(cameraParamsFile)) {
             return -1;
         }
 
     } else {
-        // perform calibration
+        // ============= calibration =============
         if (!reconstructor.init()) {
             return -1;
         }
     }
 
+    cameraPositions.clear();
+
     if (!reconstructionFiles.empty()) {
+        // ============= read files =============
         cameraPositions.read(reconstructionFiles);
         images_paths = utils::read_file_list(reconstructionFiles);
 
     } else {
-        //acquisition loop
-
-        cameraPositions.clear();
-
+        // ============= acquisition loop =============
         std::string filepath = utils::get_exec_path();
-
         int steps = static_cast<int>(static_cast<double>(x_distance)/interval);
+
         std::cout << "Going to move camera " << steps << " times by " << interval << " m.\n";
 
         for (int i = 0; i < steps; i++) {
@@ -121,14 +123,18 @@ int main(int argc, char *argv[]){
         images_file.release();
     }
 
-
+    // end acquisition
     acquisition_thread.stop();
 
+    // ============= reonstruction =============
+
+    // my reconstruction
     std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
 
-    // to compare
+    // opencv reconstruction to compare
     std::vector<cv::Mat> points3D_opencv = reconstructor.reconstruct_opencv(images_paths);
 
+    // cast to visualize
     std::vector<cv::Vec3d> points3D_opencv_vec;
     for (auto &it : points3D_opencv) {
         cv::Vec3d vec((double*)it.data);
@@ -136,7 +142,7 @@ int main(int argc, char *argv[]){
 
     }
 
-    // visualize
+    // ============= visualization =============
     cv::viz::Viz3d window;
 
     cv::viz::WCloud my_cloud = cv::viz::WCloud(points3D, cv::viz::Color::green());
@@ -155,8 +161,9 @@ int main(int argc, char *argv[]){
     window.showWidget("opencv_points", opencv_cloud);
     window.spin();
 
-    utils::save_point_cloud("my_points.ply", points3D);
 
+    // ============= save results =============
+    utils::save_point_cloud("my_points.ply", points3D);
     utils::save_point_cloud("opencv_points.ply", points3D_opencv_vec);
 
 }

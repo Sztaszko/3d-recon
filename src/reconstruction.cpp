@@ -204,6 +204,13 @@ void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
                                  std::vector<cv::Point2f> &points1,
                                  std::vector<cv::Point2f> &points2)
 {
+    // SIFT feature detector arguments
+    const int nfeatures = 10000;
+    const int nOctaveLayers = 3;
+    const double contrastThreshold = 0.04;
+    const double edgeThreshold = 10;
+    const double sigma = 1.6;
+
     cv::Mat matchImage;
 
     // vector of keypoints and descriptors
@@ -212,7 +219,9 @@ void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
     cv::Mat descriptors1, descriptors2;
 
     // Construction of the SIFT feature detector
-    cv::Ptr<cv::Feature2D> ptrFeature2D = cv::SIFT::create(10000);
+    cv::Ptr<cv::Feature2D> ptrFeature2D = cv::SIFT::create(nfeatures, nOctaveLayers,
+                                                           contrastThreshold, edgeThreshold,
+                                                           sigma);
 
     // Detection of the SIFT features and associated descriptors
     ptrFeature2D->detectAndCompute(image1, cv::noArray(), keypoints1, descriptors1);
