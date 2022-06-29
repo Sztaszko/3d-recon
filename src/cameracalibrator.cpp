@@ -67,7 +67,7 @@ int CameraCalibrator::addChessboardPoints(const std::vector<std::string>& fileli
     cv::Mat image;
     int successes = 0;
 
-    for (int i=0; i<filelist.size(); i++) {
+    for (int i = 0; i < filelist.size(); i++) {
 
         std::cout << "Read file: " << filelist[i] << "\n";
 

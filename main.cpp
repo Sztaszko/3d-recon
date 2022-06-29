@@ -126,7 +126,11 @@ int main(int argc, char *argv[]){
     // end acquisition
     acquisition_thread.stop();
 
-    // ============= reonstruction =============
+    // ============= sandbox =============
+//    SandBox sandbox;
+//    sandbox.run();
+
+//    // ============= reonstruction =============
 
     // my reconstruction
     std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);

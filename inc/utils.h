@@ -31,6 +31,13 @@ std::vector<std::string> read_file_list(std::string filename);
 
 bool save_point_cloud(std::string filename, std::vector<cv::Vec3d> pointCloud);
 
+/*!
+ * \brief The SandBox class - this is sandbox class used to test parts of the main program
+ * it should not be considered as functional element of the program, neither neccessary
+ * functionalities should be implemented here. To access for example private members of the class
+ * the friend mechanism can be used
+ */
+
 }
 
 #endif // UTILS_H
