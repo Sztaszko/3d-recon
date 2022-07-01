@@ -72,6 +72,17 @@ public:
      */
     virtual cv::Matx44f get_camera_extrinsic(int index);
 
+
+    virtual cv::Matx44f get_camera_extrinsic_diff(int idx_from, int idx_to);
+
+    /*!
+     * \brief get_rotation_difference - calculates difference rotation between from and to
+     * \param from
+     * \param to
+     * \return rotation between given matrices
+     */
+    virtual cv::Matx33f get_rotation_difference(cv::Matx33f from, cv::Matx33f to);
+
     virtual void clear();
 
     /*!

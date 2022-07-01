@@ -50,7 +50,6 @@ private:
                      std::vector<cv::Vec3d> &pts3D);
 
 
-private:
     CameraCalibrator cal;
     std::vector<std::string> chessboard_files;
     std::vector<cv::Vec3d> points3D;

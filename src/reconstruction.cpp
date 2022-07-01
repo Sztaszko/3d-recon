@@ -120,22 +120,29 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
 //        //TODO this segment is meant to be replaced by getting translation, rotation and inliers from camera move API:
 //        // ===========================
 
-//        // Find the essential between image 1 and image 2
-//        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+        // Find the essential between image 1 and image 2
+        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
-////        std::cout << "Essential matrix: " << essential << std::endl;
+//        std::cout << "Essential matrix: " << essential << std::endl;
 
-//        // recover relative camera pose from essential matrix
-//        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
-//        std::cout << "rotation from essential: " << rotation << std::endl;
-//        std::cout << "translation from essential: " << translation << std::endl;
+        // recover relative camera pose from essential matrix
+        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
+
+        rotation_from_essential.push_back(rotation);
+        translation_from_essential.push_back(translation);
+        std::cout << "==================\n";
+        std::cout << "rotation from essential: " << rotation << std::endl;
+        std::cout << "translation from essential: " << translation << std::endl;
 
 //        // ==========================
 
-        // get the inliers after replacing code above
-        cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
+//        // get the inliers after replacing code above
+//        cv::Mat affine_transformation = cv::estimateAffine2D(points1, points2, inliers);
+//        cv::Mat homography = cv::findHomography(points1, points2, cv::RANSAC, 3, inliers);
 
-        cv::Matx44f position = positions.get_camera_extrinsic(i);
+        cv::Mat fundamental_mx = cv::findFundamentalMat(points1, points2, cv::FM_RANSAC, 3., 0.99, inliers);
+
+        cv::Matx44f position = positions.get_camera_extrinsic_diff(i, i+1);
 
         rotation = cv::Mat(cv::Matx33f( position(0,0), position(0,1), position(0,2),
                                         position(1,0), position(1,1), position(1,2),
