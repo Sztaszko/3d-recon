@@ -126,10 +126,12 @@ int main(int argc, char *argv[]){
     // end acquisition
     acquisition_thread.stop();
 
+//#define SANDBOX
+#ifdef SANDBOX
     // ============= sandbox =============
-//    SandBox sandbox;
-//    sandbox.run();
-
+    SandBox sandbox;
+    sandbox.run(images_paths);
+#else
 //    // ============= reonstruction =============
 
     // my reconstruction
@@ -188,5 +190,7 @@ int main(int argc, char *argv[]){
     // ============= save results =============
     utils::save_point_cloud("my_points.ply", points3D);
     utils::save_point_cloud("opencv_points.ply", points3D_opencv_vec);
+
+#endif
 
 }

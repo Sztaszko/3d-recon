@@ -60,27 +60,36 @@ class SandBox {
 public:
     Reconstructor reconstructor;
 
-    void run() {
-        std::cout << "camMx:" << reconstructor.get_calibrator()->getCameraMatrix();
-        std::cout << "distCoef: "<< reconstructor.get_calibrator()->getDistCoeffs();
+    void run(std::vector<std::string> images_paths) {
 
-        cv::Mat image1 = cv::imread("/home/skaczmarski/projects/3d-recon/build-3d-recon-Desktop_Qt_5_15_2_GCC_64bit-Debug/0_13.28_0.0.png");
-        cv::Mat image2 = cv::imread("/home/skaczmarski/projects/3d-recon/build-3d-recon-Desktop_Qt_5_15_2_GCC_64bit-Debug/1_12.63_-4.1.png");
+        int a = 15;
 
-        // image points
-        std::vector<cv::Point2f> points1, points2;
+        for(int i = a; i < a+2; ++i) {
+
+            // image points
+            std::vector<cv::Point2f> points1, points2;
+            cv::Mat inliers;
+            cv::Mat rotation, translation;
+
+            cv::Mat image1 = cv::imread(images_paths.at(i));
+            cv::Mat image2 = cv::imread(images_paths.at(i+1));
+
+            // Find the essential between image 1 and image 2
+            cv::Mat essential = cv::findEssentialMat(points1, points2, reconstructor.cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+
+            // recover relative camera pose from essential matrix
+            cv::recoverPose(essential, points1, points2, reconstructor.cal.getCameraMatrix(), rotation, translation, inliers);
+
+            std::cout << inliers;
+
+
+
+            reconstructor.match_points(image1, image2, points1, points2);
+        }
+
 //        reconstructor.match_points(image1, image2, points1, points2);
 
 
-        cv::Mat img1_undist;
-        cv::Mat img2_undist;
-        cv::undistort(image1, img1_undist,
-                      reconstructor.get_calibrator()->getCameraMatrix(),
-                      reconstructor.get_calibrator()->getDistCoeffs());
-        cv::undistort(image2, img2_undist,
-                      reconstructor.get_calibrator()->getCameraMatrix(),
-                      reconstructor.get_calibrator()->getDistCoeffs());
-        reconstructor.match_points(img1_undist, img2_undist, points1, points2);
 
     }
 
