@@ -113,7 +113,7 @@ public:
 
 
 
-            reconstructor.match_points(image1, image2, points1, points2);
+            reconstructor.match_points(image1, image2, points1, points2, utils::SIFT);
         }
 
 //        reconstructor.match_points(image1, image2, points1, points2);

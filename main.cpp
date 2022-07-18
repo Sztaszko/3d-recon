@@ -134,8 +134,14 @@ int main(int argc, char *argv[]){
 #else
 //    // ============= reonstruction =============
 
-    // my reconstruction
+    // my reconstruction - SIFT
     std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions, utils::SIFT);
+
+    // SURF
+//    std::vector<cv::Vec3d> points3D_surf = reconstructor.reconstruct(images_paths, cameraPositions, utils::SURF);
+
+    //BRISK
+    std::vector<cv::Vec3d> points3D_brisk = reconstructor.reconstruct(images_paths, cameraPositions, utils::BRISK);
 
     // opencv reconstruction to compare
     std::vector<cv::Mat> points3D_opencv = reconstructor.reconstruct_opencv(images_paths);
@@ -190,6 +196,9 @@ int main(int argc, char *argv[]){
     // ============= save results =============
     utils::save_point_cloud("my_points.ply", points3D);
     utils::save_point_cloud("opencv_points.ply", points3D_opencv_vec);
+
+//    utils::save_point_cloud("my_points_surf.ply", points3D_surf);
+    utils::save_point_cloud("my_points_brisk.ply", points3D_brisk);
 
 #endif
 

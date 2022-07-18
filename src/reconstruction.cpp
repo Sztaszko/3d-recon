@@ -112,7 +112,16 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
         // image points
         std::vector<cv::Point2f> points1, points2;
 
-        match_points(image1, image2, points1, points2);
+//        cv::Mat img1_undist, img2_undist;
+//        cv::undistort(image1, img1_undist,
+//                      cal.getCameraMatrix(),
+//                      cal.getDistCoeffs());
+//        cv::undistort(image2, img2_undist,
+//                      cal.getCameraMatrix(),
+//                      cal.getDistCoeffs());
+
+//        match_points(img1_undist, img2_undist, points1, points2);
+        match_points(image1, image2, points1, points2, pointsMatching);
 
         cv::Mat inliers;
         cv::Mat rotation, translation;
@@ -122,18 +131,18 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
 //        // ===========================
 
         // Find the essential between image 1 and image 2
-        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
+//        cv::Mat essential = cv::findEssentialMat(points1, points2, cal.getCameraMatrix(), cv::RANSAC, 0.9, 1.0, inliers);
 
 //        std::cout << "Essential matrix: " << essential << std::endl;
 
         // recover relative camera pose from essential matrix
-        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
+//        cv::recoverPose(essential, points1, points2, cal.getCameraMatrix(), rotation, translation, inliers);
 
-        rotation_from_essential.push_back(rotation);
-        translation_from_essential.push_back(translation);
-        std::cout << "==================\n";
-        std::cout << "rotation from essential: " << rotation << std::endl;
-        std::cout << "translation from essential: " << translation << std::endl;
+//        rotation_from_essential.push_back(rotation);
+//        translation_from_essential.push_back(translation);
+//        std::cout << "==================\n";
+//        std::cout << "rotation from essential: " << rotation << std::endl;
+//        std::cout << "translation from essential: " << translation << std::endl;
 
 //        // ==========================
 
@@ -150,9 +159,10 @@ std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filen
                                         position(2,0), position(2,1), position(2,2)), true);
         translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
 
-//         debug
+////         debug
 //        std::cout << "rotation from positions: " << rotation << "\n";
 //        std::cout << "translation from positions : " << translation << "\n";
+//        std::cout << "==================\n";
 
 
         // compose projection matrix from R,T
