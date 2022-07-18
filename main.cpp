@@ -135,7 +135,7 @@ int main(int argc, char *argv[]){
 //    // ============= reonstruction =============
 
     // my reconstruction
-    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions);
+    std::vector<cv::Vec3d> points3D = reconstructor.reconstruct(images_paths, cameraPositions, utils::SIFT);
 
     // opencv reconstruction to compare
     std::vector<cv::Mat> points3D_opencv = reconstructor.reconstruct_opencv(images_paths);

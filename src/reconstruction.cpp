@@ -84,7 +84,8 @@ bool Reconstructor::init(std::string camera_params_file)
 }
 
 std::vector<cv::Vec3d> Reconstructor::reconstruct(std::vector<std::string> filenames,
-                                                  cameraAPI::CameraPosition& positions)
+                                                  cameraAPI::CameraPosition& positions,
+                                                  utils::matchingAlgorithm pointsMatching)
 {
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -209,15 +210,9 @@ std::vector<cv::Mat> Reconstructor::reconstruct_opencv(std::vector<std::string> 
 
 void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
                                  std::vector<cv::Point2f> &points1,
-                                 std::vector<cv::Point2f> &points2)
+                                 std::vector<cv::Point2f> &points2,
+                                 utils::matchingAlgorithm algorithm)
 {
-    // SIFT feature detector arguments
-    const int nfeatures = 10000;
-    const int nOctaveLayers = 3;
-    const double contrastThreshold = 0.04;
-    const double edgeThreshold = 10;
-    const double sigma = 1.6;
-
     cv::Mat matchImage;
 
     // vector of keypoints and descriptors
@@ -225,10 +220,39 @@ void Reconstructor::match_points(cv::Mat image1, cv::Mat image2,
     std::vector<cv::KeyPoint> keypoints2;
     cv::Mat descriptors1, descriptors2;
 
-    // Construction of the SIFT feature detector
-    cv::Ptr<cv::Feature2D> ptrFeature2D = cv::SIFT::create(nfeatures, nOctaveLayers,
-                                                           contrastThreshold, edgeThreshold,
-                                                           sigma);
+    cv::Ptr<cv::Feature2D> ptrFeature2D;
+
+    if (algorithm == utils::SURF) {
+
+        const double hessialThreshold = 100;
+        const int nOctaves = 4;
+        const int nOctaveLayers = 3;
+        const bool extended = false;
+        const bool upright = false;
+
+        ptrFeature2D = cv::xfeatures2d::SURF::create(hessialThreshold, nOctaves, nOctaveLayers, extended, upright);
+
+    } else if (algorithm == utils::BRISK) {
+        const int thresh = 30;
+        const int octaves = 3;
+        const float patternScale = 1.0f;
+
+        ptrFeature2D = cv::BRISK::create(thresh, octaves, patternScale);
+    } else {
+
+        // SIFT feature detector arguments
+        const int nfeatures = 10000;
+        const int nOctaveLayers = 3;
+        const double contrastThreshold = 0.04;
+        const double edgeThreshold = 10;
+        const double sigma = 1.6;
+
+
+        // Construction of the SIFT feature detector
+       ptrFeature2D = cv::SIFT::create(nfeatures, nOctaveLayers,
+                                       contrastThreshold, edgeThreshold,
+                                       sigma);
+    }
 
     // Detection of the SIFT features and associated descriptors
     ptrFeature2D->detectAndCompute(image1, cv::noArray(), keypoints1, descriptors1);

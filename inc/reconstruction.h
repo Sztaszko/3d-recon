@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include "cameracalibrator.h"
 #include "camera.h"
+#include "utils.h"
 
 
 class Reconstructor {
@@ -24,18 +25,46 @@ public:
      */
     bool init(std::string camera_params_file);
 
-    std::vector<cv::Vec3d> reconstruct(std::vector<std::string> filenames, cameraAPI::CameraPosition& postisions);
+    /*!
+     * \brief reconstruct - performs reconstruction reading images
+     * from filenames and using theirs position
+     * \param filenames -  list of images paths
+     * \param positions - CameraPosition with image positions
+     * \param pointsMatching - points matching algorythm type
+     * \return reconstructed 3D points
+     */
+    std::vector<cv::Vec3d> reconstruct(std::vector<std::string> filenames,
+                                       cameraAPI::CameraPosition& positions,
+                                       utils::matchingAlgorithm pointsMatching);
 
+    /*!
+     * \brief reconstruct_opencv - 3D reconstruction using opencv reconstruct() function
+     * \param filenames - list of images paths for reconstruction
+     * \return reconstructed 3D points
+     */
     std::vector<cv::Mat> reconstruct_opencv(std::vector<std::string> filenames);
 
     // getters
     std::vector<cv::Vec3d> get_points3D() { return points3D; }
     CameraCalibrator* get_calibrator() { return &cal; }
 
+    // used in debugging and sandbox
+    std::vector<cv::Mat> rotation_from_essential;
+    std::vector<cv::Mat> translation_from_essential;
+
 private:
+    /*!
+     * \brief match_points - performs points matching with requested method
+     *
+     * \param image1
+     * \param image2
+     * \param points1
+     * \param points2
+     */
     void match_points(cv::Mat image1, cv::Mat image2,
                       std::vector<cv::Point2f> &points1,
-                      std::vector<cv::Point2f> &points2);
+                      std::vector<cv::Point2f> &points2,
+                      utils::matchingAlgorithm algorithm);
 
     void create_inliers(std::vector<cv::Point2f> points1, std::vector<cv::Point2f> points2,
                         std::vector<cv::Vec2d> &inlier1, std::vector<cv::Vec2d> &inlier2, cv::Mat inliers);

@@ -29,6 +29,12 @@ std::vector<std::string> read_file_list(std::string filename);
 //  return 1;
 //}
 
+enum matchingAlgorithm{
+    SIFT = 0,
+    SURF,
+    BRISK
+};
+
 bool save_point_cloud(std::string filename, std::vector<cv::Vec3d> pointCloud);
 
 /*!
