@@ -168,28 +168,29 @@ int main(int argc, char *argv[]){
 
     window.setBackgroundColor(cv::viz::Color::black());
 
-    //Displaying the 3D points in green
-    window.showWidget("my_points", my_cloud);
-    window.showWidget("opencv_points", opencv_cloud);
+//    //Displaying the 3D points in green
+//    window.showWidget("my_points", my_cloud);
+//    window.showWidget("opencv_points", opencv_cloud);
 
-//    for (int i = 0; i < images_paths.size() - 1; ++i) {
+    for (int i = 1; i < images_paths.size() - 1; ++i) {
 
-//        cv::Matx44f position = cameraPositions.get_camera_extrinsic(i);
+        cv::Matx44f position = cameraPositions.get_relative_diff(i, i+1);
+//        cv::Matx44f position = cameraPositions.get_camera_extrinsic_diff(i, i+1);
 
-//        cv::Mat rotation = cv::Mat(cv::Matx33f( position(0,0), position(0,1), position(0,2),
-//                                                position(1,0), position(1,1), position(1,2),
-//                                                position(2,0), position(2,1), position(2,2)), true);
-//        cv::Mat translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
+        cv::Mat rotation = cv::Mat(cv::Matx33f( position(0,0), position(0,1), position(0,2),
+                                                position(1,0), position(1,1), position(1,2),
+                                                position(2,0), position(2,1), position(2,2)), true);
+        cv::Mat translation = cv::Mat({position(0,3), position(1,3), position(2,3)});
 
-//        cv::Affine3f pose(rotation, translation);
-//        window.showWidget("camera" + std::to_string(i), cv::viz::WCameraPosition(cv::Matx33d(reconstructor.get_calibrator()->getCameraMatrix())), pose);
+        cv::Affine3f pose(rotation, translation);
+        window.showWidget("camera" + std::to_string(i), cv::viz::WCameraPosition(cv::Matx33d(reconstructor.get_calibrator()->getCameraMatrix())), pose);
 
-//        rotation = reconstructor.rotation_from_essential.at(i);
-//        translation = reconstructor.translation_from_essential.at(i);
-//        cv::Affine3d pose_ess(rotation, translation);
-//        window.showWidget("camera_ess" + std::to_string(i), cv::viz::WCameraPosition(cv::Matx33d(reconstructor.get_calibrator()->getCameraMatrix())), pose_ess);
+        rotation = reconstructor.rotation_from_essential.at(i);
+        translation = reconstructor.translation_from_essential.at(i);
+        cv::Affine3d pose_ess(rotation, translation);
+        window.showWidget("camera_ess" + std::to_string(i), cv::viz::WCameraPosition(cv::Matx33d(reconstructor.get_calibrator()->getCameraMatrix())), pose_ess);
 
-//    }
+    }
 
     window.spin();
 

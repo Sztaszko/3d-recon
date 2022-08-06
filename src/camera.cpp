@@ -111,14 +111,49 @@ cv::Matx44f cameraAPI::CameraPosition::get_camera_extrinsic_diff(int idx_from, i
     cv::Matx33f rot_to(extr_to(0,0), extr_to(0,1), extr_to(0,2),
                        extr_to(1,0), extr_to(1,1), extr_to(1,2),
                        extr_to(2,0), extr_to(2,1), extr_to(2,2));
+    cv::Matx13f translation({extr_to(0,3) - extr_from(0,3), extr_to(1,3)  - extr_from(1,3), extr_to(2,3) - extr_from(2,3)});
 
     cv::Matx33f rotation = get_rotation_difference(rot_from, rot_to);
-    cv::Matx13f translation({extr_to(0,3) - extr_from(0,3), extr_to(1,3)  - extr_from(1,3), extr_to(2,3) - extr_from(2,3)});
+
 
     ret_mx = cv::Matx44f(rotation(0,0), rotation(0,1), rotation(0,2), translation(0),
                          rotation(1,0), rotation(1,1), rotation(1,2), translation(1),
                          rotation(2,0), rotation(2,1), rotation(2,2), translation(2),
                          0,                 0,                 0,                 1);
+
+    return ret_mx;
+}
+
+cv::Matx44f cameraAPI::CameraPosition::get_relative_diff(int idx_from, int idx_to)
+{
+    cv::Matx44f extr_from, extr_to, ret_mx;
+
+    try {
+        extr_from = _camera_extrinsics.at(idx_from);
+        extr_to = _camera_extrinsics.at(idx_to);
+
+    } catch (const std::out_of_range &e) {
+        std::cout << "Index out of range return empty extr matrix: " << e.what() << "\n";
+        return cv::Matx44f();
+    }
+
+    cv::Matx33f rot_from(extr_from(0,0), extr_from(0,1), extr_from(0,2),
+                         extr_from(1,0), extr_from(1,1), extr_from(1,2),
+                         extr_from(2,0), extr_from(2,1), extr_from(2,2));
+    cv::Matx33f rot_to(extr_to(0,0), extr_to(0,1), extr_to(0,2),
+                       extr_to(1,0), extr_to(1,1), extr_to(1,2),
+                       extr_to(2,0), extr_to(2,1), extr_to(2,2));
+
+    // calculate position of the shift in relative
+    cv::Matx31f relative_position = {extr_to(0,3) - extr_from(0,3), extr_to(1,3) - extr_from(1,3), extr_to(2,3) - extr_from(2,3)};
+    relative_position = rot_from * relative_position;
+
+    cv::Matx33f rotation = get_rotation_difference(rot_from, rot_to);
+
+    ret_mx = cv::Matx44f(rotation(0,0), rotation(0,1), rotation(0,2), relative_position(0),
+                         rotation(1,0), rotation(1,1), rotation(1,2), relative_position(1),
+                         rotation(2,0), rotation(2,1), rotation(2,2), relative_position(2),
+                         0,             0,             0,             1);
 
     return ret_mx;
 }
